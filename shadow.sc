@@ -1,3 +1,6 @@
+//Lets players use the shadow function of /player without allowing access to the other functions
+//Does not (currently) work with nick name mods. YMMV on this though
+
 __config() -> {
    'commands' -> {
      '' -> 'shadow',
