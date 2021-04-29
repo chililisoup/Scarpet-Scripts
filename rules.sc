@@ -1,3 +1,5 @@
+//rules command for my server. If you want to use, just add/remove rules from the list.
+
 __config() -> (
    m(
       l('stay_loaded','true')
