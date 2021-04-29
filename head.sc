@@ -1,3 +1,5 @@
+//Converts a normal steve player head (minecraft:player_head w/ no nbt) into one bound to a username
+
 __config() -> {
    'commands' -> {
      '<username>' -> 'giveHead',
