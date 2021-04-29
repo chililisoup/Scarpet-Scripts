@@ -1,3 +1,5 @@
+//Locks/unlocks a container with /lock <pasword>
+
 __config() -> {
    'commands' -> {
      '<key>' -> 'lockBlock',
