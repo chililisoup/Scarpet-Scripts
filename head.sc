@@ -1,4 +1,4 @@
-//Converts a normal steve player head (minecraft:player_head w/ no nbt) into one bound to a username
+//Converts a normal steve player head (minecraft:player_head w/ no nbt) into one skinned to a username
 
 __config() -> {
    'commands' -> {
