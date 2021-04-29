@@ -1,3 +1,6 @@
+//Allows non opped players to display scoreboard statistics for 5 seconds.
+//Change time on line 21 (time is in ticks)
+
 __config() -> {
    'commands' -> {
      'help' -> 'help',
