@@ -1,3 +1,5 @@
+//Standard /hat command. Puts held item on your head armor slot
+
 __config() -> (
    m(
       l('stay_loaded','true')
