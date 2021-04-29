@@ -1,3 +1,5 @@
+//Links a url in chat with /link <url>
+
 __config() -> {
    'commands' -> {
      '<url>' -> 'link',
