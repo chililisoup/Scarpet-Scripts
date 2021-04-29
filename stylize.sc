@@ -1,3 +1,6 @@
+//Allows you to use hex codes in item names by replacing the character # with where you want the color
+//Usage: /stylize <hex>    Ex: /stylize ffffff
+
 __config() -> {
    'commands' -> {
      '<hex>' -> 'stylize',
