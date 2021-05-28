@@ -1,7 +1,7 @@
 //Teleports the user to a random location on the surface of the map.
 
 global_teleport_radius = 5000; //Square radius in blocks around 0,0
-global_teleport_timeout = 3600; //Time in ticks (20 ticks = 1 second)
+global_teleport_timeout = 3600; //Time in ticks between uses (20 ticks = 1 second)
 
 __config() -> {
    ['stay_loaded','true']
