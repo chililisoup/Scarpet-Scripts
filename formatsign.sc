@@ -8,7 +8,15 @@ global_sign_types = [
    'acacia_sign',
    'dark_oak_sign',
    'crimson_sign',
-   'warped_sign'
+   'warped_sign',
+   'oak_wall_sign',
+   'spruce_wall_sign',
+   'birch_wall_sign',
+   'jungle_wall_sign',
+   'acacia_wall_sign',
+   'dark_oak_wall_sign',
+   'crimson_wall_sign',
+   'warped_wall_sign'
 ];
 
 __config() -> {
@@ -23,7 +31,7 @@ __on_player_interacts_with_block(player, hand, block, face, hitvec) -> (
          put(block_props, _i*2, _);
          put(block_props, _i*2 + 1, block_state(block, _));
       );
-      print(block_props);
+
       block_nbt = block_data(block_pos);
       put(block_nbt, 'Text1', format_text(block_nbt:'Text1'));
       put(block_nbt, 'Text2', format_text(block_nbt:'Text2'));
