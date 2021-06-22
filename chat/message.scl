@@ -1,0 +1,42 @@
+//library required by m.sc and r.sc, used for sending private messages
+
+global_color_codes = {
+   'black' -> 'k ',
+   'dark_blue' -> 'v ',
+   'dark_green' -> 'e ',
+   'dark_aqua' -> 'q ',
+   'dark_red' -> 'n ',
+   'dark_purple' -> 'p ',
+   'gold' -> 'd ',
+   'gray' -> 'g ',
+   'dark_gray' -> 'f ',
+   'blue' -> 't ',
+   'green' -> 'l ',
+   'aqua' -> 'c ',
+   'red' -> 'r ',
+   'light_purple' -> 'm ',
+   'yellow' -> 'y ',
+   'white' -> 'w '
+};
+
+get_team_color(plr) -> (
+   team = query(player(plr), 'team');
+   if (team,
+      return(get(global_color_codes, team_property(team, 'color'))),
+      return('y ');
+   );
+);
+
+send_message(from, to, msg) -> (
+   if (player(to),
+      delete_file('msg_' + from, 'shared_text');
+      write_file('msg_' + from, 'shared_text', to);
+      delete_file('msg_' + to, 'shared_text');
+      write_file('msg_' + to, 'shared_text', from);
+      print(from, format('w [', 'y You', 'd  -> ', get_team_color(to) + to, 'w ] ' + msg));
+      print(to, format('w [', get_team_color(from) + from, 'd  -> ', 'y You' , 'w ] ' + msg));
+      run('execute as ' + to + ' at ' + to + ' run playsound minecraft:entity.experience_orb.pickup master @s ~ ~ ~'),
+      
+      print(from, format('w [','d Message','w ] ','y That player is not online!'));
+   );
+);
