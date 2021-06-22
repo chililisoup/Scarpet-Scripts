@@ -43,6 +43,7 @@ __on_player_interacts_with_block(player, hand, block, face, hitvec) -> (
 );
 
 format_text(string) -> (
+   string = replace(string, '\'', '\\\\\'');
    string = join('"},{"color":"black","text":"', split('&0', string));
    string = join('"},{"color":"dark_blue","text":"', split('&1', string));
    string = join('"},{"color":"dark_green","text":"', split('&2', string));
