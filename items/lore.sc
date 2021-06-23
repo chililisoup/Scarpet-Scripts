@@ -24,3 +24,18 @@ __command() -> (
    );
    exit();
 );
+
+reset() -> (
+   plr = player();
+   item = query(plr, 'holds');
+   if (item,
+      name = item:2:'display':'Name';
+      if (name,
+         item:2:'display' = '{Name: \'' + name + '\'}',
+         delete(item:2, 'display');
+      );
+      inventory_set(plr, query(plr, 'selected_slot'), item:1, item:0, item:2),
+      print(format('w [','d Lore','w ] ','y You aren\'t holding anything!'));
+   );
+   exit();
+);
