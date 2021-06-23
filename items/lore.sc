@@ -11,6 +11,7 @@ __command() -> (
       name = item:2:'display':'Name';
       if (name,
          lore = item:2:'display':'Lore';
+         name = replace(name, '\'', '\\\\\'');
          if (lore,
             lore = replace(lore, '.{1}$');
             lore += ',\'' + name + '\']',
