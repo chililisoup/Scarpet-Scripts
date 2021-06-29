@@ -1,5 +1,15 @@
 //Locks/unlocks a container with /lock <pasword>
 
+global_lockables = [
+   'chest',
+   'trapped_chest',
+   'barrel',
+   'hopper',
+   'furnace',
+   'blast_furnace',
+   'smoker'
+];
+
 __config() -> {
    'commands' -> {
      '<key>' -> 'lockBlock',
@@ -18,15 +28,7 @@ lockBlock(key) -> (
    current_gamemode = p~'gamemode';
    blok = query(p, 'trace', 4.5, 'blocks');
    if (blok,
-      if (isInArray([
-         'chest',
-         'trapped_chest',
-         'barrel',
-         'hopper',
-         'furnace',
-         'blast_furnace',
-         'smoker'
-      ], blok),
+      if (isInArray(global_lockables, blok),
          if (name != replace(name, '[^A-Za-z0-9-_+.]'),
             print(format('w [','d Lock','w ] ', 'y Invalid characters in key!'));
             exit();
