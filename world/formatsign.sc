@@ -37,8 +37,8 @@ __on_player_interacts_with_block(player, hand, block, face, hitvec) -> (
       put(block_nbt, 'Text2', format_text(block_nbt:'Text2'));
       put(block_nbt, 'Text3', format_text(block_nbt:'Text3'));
       put(block_nbt, 'Text4', format_text(block_nbt:'Text4'));
-      set(block_pos, 'air');
-      set(block_pos, block, block_props, block_nbt);
+      without_updates(set(block_pos, 'air'));
+      without_updates(set(block_pos, block, block_props, block_nbt));
    );
 );
 
