@@ -82,5 +82,5 @@ formatText(string) -> (
             formatted_list:length(formatted_list) = text_object;
         );
     );
-    return(formatted_list);
+    return(encode_json(formatted_list));
 );
