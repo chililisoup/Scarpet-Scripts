@@ -35,7 +35,6 @@ global_bukkit_format_codes = {
 format_text(string) -> (
     string = split('&', string);
     formatted_list = [''];
-    print(raw);
 
     format_settings = {
         'color' -> false,
