@@ -34,6 +34,7 @@ global_bukkit_format_codes = {
 
 format_text(string) -> (
     string = split('&', string);
+    if (string == [], string = ['']);
     formatted_list = [''];
 
     format_settings = {
@@ -50,23 +51,23 @@ format_text(string) -> (
 
         if (!length(_),
             _ = '&';
-            if (!_i,
-                _ = ' ';
-                has_code = true;
-            );
         );
 
-        if (color = global_bukkit_color_codes:slice(_, 0, 1),
+        if (_i && (color = global_bukkit_color_codes:slice(_, 0, 1)),
             for (keys(format_settings), format_settings:_ = false);
             format_settings:'color' = color;
             has_code = true;
         );
-        if (format_setting = global_bukkit_format_codes:slice(_, 0, 1),
+
+        if (_i && (format_setting = global_bukkit_format_codes:slice(_, 0, 1)),
             format_settings:format_setting = true;
             has_code = true;
         );
 
         if (!has_code, _ = '&' + _);
+        if (has_code && _i == 1 && formatted_list:1 == {'text' -> '&'},
+            delete(formatted_list, 1)
+        );
 
         if (length(_) > 1,
             _ = slice(_, 1);
