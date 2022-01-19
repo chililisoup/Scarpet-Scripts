@@ -1,7 +1,7 @@
 // Takes in a string and returns a string of Bukkit formatted JSON text
 
 // Usage:
-// import('format_text', 'formatText'); 
+// import('format_text', 'format_text'); 
 // formatText(string);
 
 global_bukkit_color_codes = {
@@ -32,7 +32,7 @@ global_bukkit_format_codes = {
     'o' -> 'italic'
 };
 
-formatText(string) -> (
+format_text(string) -> (
     string = split('&', string);
     formatted_list = [''];
     print(raw);
