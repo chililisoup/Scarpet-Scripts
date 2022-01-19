@@ -1,6 +1,7 @@
-//Converts normal steve player heasd (minecraft:player_head w/ no nbt) into ones skinned to a username
+// Converts normal steve player heasd (minecraft:player_head w/ no nbt) into ones skinned to a username
+// Survival mode version, for creative see creative/head.sc
 
-global_blocked_names = [ //Can block names here, or make empty to block none
+global_blocked_names = [ // Can block names here, or make empty to block none
    'name',
    'other_name'
 ];
