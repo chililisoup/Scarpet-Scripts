@@ -1,0 +1,86 @@
+// Takes in a string and returns a string of Bukkit formatted JSON text
+
+// Usage:
+// import('format_text', 'formatText'); 
+// formatText(string);
+
+global_bukkit_color_codes = {
+    '0' -> 'black',
+    '1' -> 'dark_blue',
+    '2' -> 'dark_green',
+    '3' -> 'dark_aqua',
+    '4' -> 'dark_red',
+    '5' -> 'dark_purple',
+    '6' -> 'gold',
+    '7' -> 'gray',
+    '8' -> 'dark_blue',
+    '9' -> 'blue',
+    'a' -> 'green',
+    'b' -> 'aqua',
+    'c' -> 'red',
+    'd' -> 'light_purple',
+    'e' -> 'yellow',
+    'f' -> 'white',
+    'r' -> 'reset'
+};
+
+global_bukkit_format_codes = {
+    'k' -> 'obfuscated',
+    'l' -> 'bold',
+    'm' -> 'strikethrough',
+    'n' -> 'underlined',
+    'o' -> 'italic'
+};
+
+formatText(string) -> (
+    string = split('&', string);
+    formatted_list = [''];
+    print(raw);
+
+    format_settings = {
+        'color' -> false,
+        'obfuscated' -> false,
+        'bold' -> false,
+        'strikethrough' -> false,
+        'underlined' -> false,
+        'italic' -> false
+    };
+
+    for (string,
+        has_code = false;
+
+        if (!length(_),
+            _ = '&';
+            if (!_i,
+                _ = ' ';
+                has_code = true;
+            );
+        );
+
+        if (color = global_bukkit_color_codes:slice(_, 0, 1),
+            for (keys(format_settings), format_settings:_ = false);
+            format_settings:'color' = color;
+            has_code = true;
+        );
+        if (format_setting = global_bukkit_format_codes:slice(_, 0, 1),
+            format_settings:format_setting = true;
+            has_code = true;
+        );
+
+        if (!has_code, _ = '&' + _);
+
+        if (length(_) > 1,
+            _ = slice(_, 1);
+            text_object = {
+                'text' -> _
+            };
+            for (keys(format_settings),
+                if (setting = format_settings:_,
+                    text_object:_ = setting;
+                );
+            );
+            formatted_list:length(formatted_list) = text_object;
+        );
+    );
+    return(formatted_list);
+);
