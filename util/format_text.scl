@@ -2,7 +2,7 @@
 
 // Usage:
 // import('format_text', 'format_text'); 
-// formatText(string);
+// format_text(string);
 
 global_bukkit_color_codes = {
     '0' -> 'black',
@@ -79,8 +79,9 @@ format_text(string) -> (
                     text_object:_ = setting;
                 );
             );
-            formatted_list:length(formatted_list) = text_object;
+            formatted_list += text_object;
         );
     );
+
     return(encode_json(formatted_list));
 );

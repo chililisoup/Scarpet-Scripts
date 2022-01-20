@@ -1,69 +1,61 @@
-//Locks/unlocks a container with /lock <pasword>
+// Locks/unlocks a container with /lock <password>
 
 global_lockables = [
-   'chest',
-   'trapped_chest',
-   'barrel',
-   'hopper',
-   'furnace',
-   'blast_furnace',
-   'smoker'
+	'chest',
+	'trapped_chest',
+	'barrel',
+	'hopper',
+	'furnace',
+	'blast_furnace',
+	'smoker'
 ];
 
 __config() -> {
-   'commands' -> {
-     '<key>' -> 'lockBlock',
-   },
-   'arguments' -> {
-      'key' -> {
-         'type' -> 'term',
-         'suggest' -> ['password']
-      }
-   },
-   ['stay_loaded','true']
+	'commands' -> {
+		'<key>' -> 'lock_block'
+	},
+	'arguments' -> {
+		'key' -> {
+			'type' -> 'term',
+			'suggest' -> ['password']
+		}
+	}
 };
 
-lockBlock(key) -> (
-   p = player();
-   current_gamemode = p~'gamemode';
-   blok = query(p, 'trace', 4.5, 'blocks');
-   if (blok,
-      if (isInArray(global_lockables, blok),
-         if (name != replace(name, '[^A-Za-z0-9-_+.]'),
-            print(format('w [','d Lock','w ] ', 'y Invalid characters in key!'));
-            exit();
-         );
-         blok_pos = pos(blok);
-         blok_props = [];
-         for (keys(block_state(blok_pos)),
-            put(blok_props, _i*2, _);
-            put(blok_props, _i*2 + 1, block_state(blok_pos, _));
-         );
-         blok_data = block_data(blok_pos);
-         if (blok_data:'Lock',
-            if (blok_data:'Lock' == key,
-               delete(blok_data, 'Lock');
-               set(blok_pos, blok, blok_props, blok_data);
-               print(format('w [','d Lock','w ] ', 'y Successfully unlocked ', 'wb ' + blok, 'y .')),
-               print(format('w [','d Lock','w ] ', 'y This ', 'wb ' + blok, 'y  is locked! Input correct password to unlock.'));
-            ),
-            put(blok_data, 'Lock', key);
-            set(blok_pos, blok, blok_props, blok_data);
-            print(format('w [','d Lock','w ] ', 'y Successfully locked ', 'wb ' + blok, 'y  with key ', 'wb ' + key, 'y .'));
-         ),
-         print(format('w [','d Lock','w ] ', 'y This block can\'t be locked!'));
-      ),
-      print(format('w [','d Lock','w ] ', 'y You\'re not looking at anything in range.'));
-   );
-   exit();
+lock_block(key) -> (
+	plr = player();
+	current_gamemode = plr ~ 'gamemode';
+	current_block = query(plr, 'trace', 4.5, 'blocks');
+
+	if (!current_block, exit(print(format('w [', 'd Lock', 'w ] ', 'y You\'re not looking at anything in range.'))));
+	if (!is_in_array(global_lockables, current_block), exit(print(format('w [', 'd Lock', 'w ] ', 'y This block can\'t be locked!'))));
+	if (name != replace(name, '[^A-Za-z0-9-_+.]'), exit(print(format('w [', 'd Lock', 'w ] ', 'y Invalid characters in key!'))));
+
+	block_pos = pos(current_block);
+	block_props = [];
+	for (keys(block_state(block_pos)),
+		put(block_props, _i*2, _);
+		put(block_props, _i*2 + 1, block_state(block_pos, _));
+	);
+
+	block_data = block_data(block_pos);
+	if (block_data:'Lock',
+		if (block_data:'Lock' == key,
+			delete(block_data, 'Lock');
+			set(block_pos, current_block, block_props, block_data);
+			print(format('w [', 'd Lock', 'w ] ', 'y Successfully unlocked ', 'wb ' + current_block, 'y .')),
+			
+			print(format('w [', 'd Lock', 'w ] ', 'y This ', 'wb ' + current_block, 'y  is locked! Input correct password to unlock.'));
+		),
+
+		put(block_data, 'Lock', key);
+		set(block_pos, current_block, block_props, block_data);
+		print(format('w [', 'd Lock', 'w ] ', 'y Successfully locked ', 'wb ' + current_block, 'y  with key ', 'wb ' + key, 'y .'));
+	);
+	exit();
 );
 
-isInArray(arr, val) -> (
-   for (arr,
-      if (val == _,
-         r = true;
-         break();
-      );
-   );
-   r
-)
+is_in_array(arr, val) -> (
+	for (arr, if (val == _, return(true)));
+	return(false);
+);

@@ -6,14 +6,14 @@ import('format_text', 'format_text');
 
 __config() -> {
 	'commands' -> {
-	  'add <lore>' -> 'lore',
-	  'clear' -> ['clear', 0],
-	  'clear <lines>' -> 'clear',
+		'add <lore>' -> 'lore',
+		'clear' -> ['clear', 0],
+		'clear <lines>' -> 'clear'
 	},
 	'arguments' -> {
 		'lore' -> {
 			'type' -> 'text',
-			'suggest' -> ['']
+			'suggest' -> []
 		},
 		'lines' -> {
 			'type' -> 'int',
@@ -27,7 +27,7 @@ lore(text) -> (
 	plr = player();
 
 	item = query(plr, 'holds');
-	if (!item, exit(print(format('w [','d Lore','w ] ','y You aren\'t holding anything!'))));
+	if (!item, exit(print(format('w [', 'd Lore', 'w ] ', 'y You aren\'t holding anything!'))));
 
 	text = format_text(text);
 	text = decode_json(text);
@@ -55,10 +55,10 @@ clear(lines) -> (
 	plr = player();
 
 	item = query(plr, 'holds');
-	if (!item, exit(print(format('w [','d Lore','w ] ','y You aren\'t holding anything!'))));
+	if (!item, exit(print(format('w [', 'd Lore', 'w ] ', 'y You aren\'t holding anything!'))));
 
 	nbt = parse_nbt(item:2);
-	if (!nbt:'display':'Lore', exit(print(format('w [','d Lore','w ] ','y No lore to clear.'))));
+	if (!nbt:'display':'Lore', exit(print(format('w [', 'd Lore', 'w ] ', 'y No lore to clear.'))));
 
 	if (lines,
 		for (range(0, lines),

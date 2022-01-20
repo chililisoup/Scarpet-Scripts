@@ -1,24 +1,19 @@
-//rules command for my server. If you want to use, just add/remove rules from the list.
+// A simple command that lists the rules from the global_rules array
 
-__config() -> (
-   m(
-      l('stay_loaded','true')
-   )
-);
+global_rules = [
+	'Do not steal',
+	'Do not grief',
+	'Do not be rude',
+	'Obey the rules',
+	'Pay me $5 every other Tuesday'
+];
 
-__command() ->
-(
-   print(format('db Rules', 'w :'));
-   for([
-      'Do not be America_Forever',
-      'Your pranks shouldn\'t cause damage. Fix it if they do',
-      'Play at least once a day',
-      'Don\'t kill anyone for no reason',
-      'Do not download RAM to the server. It has enough',
-      'Make a Wither Skeleton Farm',
-      'Do not use /head to get heads you can get through other means!'
-   ],
-      print(format('d '+str(_i+1),'w ) ','y '+_));
-   );
-   exit();
+__config() -> {};
+
+__command() -> (
+	print(format('db Rules', 'w :'));
+	for (global_rules,
+		print(format('d '+str(_i+1),'w ) ','y '+_));
+	);
+	exit();
 );

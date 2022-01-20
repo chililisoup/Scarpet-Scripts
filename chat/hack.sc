@@ -1,13 +1,8 @@
-//sends a message to the server saying the executor has hacked the server. Joke command
+// Sends a message to the server saying the executor has hacked the server. Joke command. Ha!
 
-__config() -> (
-   m(
-      l('stay_loaded','true')
-   )
-);
+__config() -> {};
 
-__command() ->
-(
-   run('tellraw @a [{"selector":"@s"},{"text":" has hacked the server! WTF!","color":"red","bold":"true"}]');
-   exit();
+__command() -> (
+	run('tellraw @a [{"selector":"@s"},{"text":" has hacked the server! WTF!","color":"red","bold":"true"}]');
+	exit();
 );
