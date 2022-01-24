@@ -5,7 +5,7 @@ import('format_text', 'format_text');
 
 __config() -> {
 	'commands' -> {
-        '' -> ['rename', false],
+        '' -> 'clear_name',
 		'<name>' -> 'rename'
 	},
 	'arguments' -> {
@@ -23,16 +23,6 @@ rename(text) -> (
 	if (!item, exit(print(format('w [', 'd Rename', 'w ] ', 'y You aren\'t holding anything!'))));
 
     nbt = parse_nbt(item:2);
-
-	if (!text,
-        delete(nbt:'display':'Name');
-        if (nbt:'display' == {}, delete(nbt:'display'));
-        if (!nbt || nbt == {} || nbt == 'null',
-            inventory_set(plr, query(plr, 'selected_slot'), item:1, item:0),
-            inventory_set(plr, query(plr, 'selected_slot'), item:1, item:0, encode_nbt(nbt));
-        );
-        exit();
-    );
 
 	text = format_text(text);
     text = decode_json(text);
@@ -52,4 +42,23 @@ rename(text) -> (
 	inventory_set(plr, query(plr, 'selected_slot'), item:1, item:0, encode_nbt(nbt));
 
 	exit();
+);
+
+clear_name() -> (
+    plr = player();
+
+	item = query(plr, 'holds');
+	if (!item, exit(print(format('w [', 'd Rename', 'w ] ', 'y You aren\'t holding anything!'))));
+
+    nbt = parse_nbt(item:2);
+
+    delete(nbt:'display':'Name');
+
+    if (nbt:'display' == {}, delete(nbt:'display'));
+    if (!nbt || nbt == {} || nbt == 'null',
+        inventory_set(plr, query(plr, 'selected_slot'), item:1, item:0),
+        inventory_set(plr, query(plr, 'selected_slot'), item:1, item:0, encode_nbt(nbt));
+    );
+
+    exit();
 );
