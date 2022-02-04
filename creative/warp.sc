@@ -49,7 +49,7 @@ list_warps() -> (
     json = read_file('warp_list', 'json');
     if (!json, print(format('w [', 'd Warp', 'w ] ', 'y No warps found!')),
         print(format('db Available warps', 'w :'));
-        for(json, print(format('y  ' + _:'name')));
+        for(json, print(format('y  ' + _:'name', '^w Click here to warp', '!/warp ' + _:'name')));
     );
     exit();
 );
