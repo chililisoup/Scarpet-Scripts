@@ -7,12 +7,19 @@ __config() -> {
         '<destination>' -> 'warp',
         'list' -> 'list_warps',
         'create <name>' -> 'create_warp',
-        'delete <name>' -> 'delete_warp'
+        'delete <destination>' -> 'delete_warp'
     },
     'arguments' -> {
         'destination' -> {
             'type' -> 'term',
-            'suggest' -> []
+            'suggester' -> _(args) -> (
+				json = read_file('warp_list_' + player() ~ 'uuid', 'json');
+                destinations = [];
+                if (!json, return([]),
+                    for(json, destinations += _:'name');
+                    return(destinations);
+                );
+			)
         },
         'name' -> {
             'type' -> 'term',
