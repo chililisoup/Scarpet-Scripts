@@ -710,7 +710,7 @@ highlight_point(point) -> (
     if (type(point) == 'number', point = park:'checkpoints':point);
     if (!point, exit(print(format('w [', 'd Parkour', 'w ] ', 'y That point does not exist'))));
 
-    spawn('falling_block', point:0 + 0.5, point:1, point:2 + 0.5, '{BlockState:{Name:"' + block + '"},Time:-200,NoGravity:1b,Glowing:1b}');
+    spawn('falling_block', point:0 + 0.5, point:1, point:2 + 0.5, '{BlockState:{Name:"' + block + '"},Time:400,NoGravity:1b,Glowing:1b,DropItem:0b}');
 );
 
 delete_checkpoint(point) -> (
