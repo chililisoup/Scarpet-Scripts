@@ -33,10 +33,8 @@ global_bukkit_format_codes = {
 };
 
 format_text(string) -> (
-    string = split('&', string);
-    if (string == [], string = ['']);
+    string = split('&(?=[0-9a-fk-or])', string);
     formatted_list = [''];
-
     format_settings = {
         'color' -> false,
         'obfuscated' -> false,
@@ -47,30 +45,17 @@ format_text(string) -> (
     };
 
     for (string,
-        has_code = false;
-
-        if (!length(_),
-            _ = '&';
-        );
-
         if (_i && (color = global_bukkit_color_codes:slice(_, 0, 1)),
             for (keys(format_settings), format_settings:_ = false);
             format_settings:'color' = color;
-            has_code = true;
         );
 
         if (_i && (format_setting = global_bukkit_format_codes:slice(_, 0, 1)),
             format_settings:format_setting = true;
-            has_code = true;
-        );
-
-        if (!has_code, _ = '&' + _);
-        if (has_code && _i == 1 && formatted_list:1 == {'text' -> '&'},
-            delete(formatted_list, 1)
         );
 
         if (length(_) > 1,
-            _ = slice(_, 1);
+            if (_i, _ = slice(_, 1));
             text_object = {
                 'text' -> _
             };
@@ -79,7 +64,7 @@ format_text(string) -> (
                     text_object:_ = setting;
                 );
             );
-            formatted_list += text_object;
+            formatted_list:length(formatted_list) = text_object;
         );
     );
 
