@@ -103,7 +103,7 @@ global_markup_colors = [
 ];
 
 format_text(string) -> (
-    string = split('(?<!\\\\)&(?=[0-9a-fk-or])', string);
+    string = split('(?<!\\\\)(?<![^\\\\]<[^>]+)(?<!^<[^>]+)&(?=[0-9a-fk-or])', string);
     new_string = '';
     format_settings = {
         'color' -> false,
@@ -136,7 +136,7 @@ format_text(string) -> (
             new_string += replace(_, '\\\\&', '&');
         );
     );
-
+    
     return(format_markdown(new_string));
 );
 
@@ -181,7 +181,7 @@ format_bukkit(string) -> (
 
 //Loosely based on Placeholder API
 format_markdown(string) -> (
-    formatted_list = [''];
+    formatted_list = [];
     color_cache = [];
     click_cache = [];
     hover_cache = [];
@@ -215,7 +215,7 @@ format_markdown(string) -> (
     
     for (string,
         tag = replace(_, '[<\\/>]');
-        is_tag = replace(_, '(?<!\\\\)<\\/?[\\w:#]+>') == '';
+        is_tag = _ && replace(_, '(?<!\\\\)<\\/?[\\w:#]+>') == '';
 
         if (is_tag && markup_tag = global_markdown_markup:tag,
             format_settings:(markup_tag) += number(split(_):1 != '/') * 2 - 1;
@@ -238,7 +238,7 @@ format_markdown(string) -> (
             continue();
         );
 
-        if (replace(_, '<(c(olor)?:#[0-9A-Fa-f]{6}|\\/c(olor)?)>') == '',
+        if (is_tag && replace(_, '<(c(olor)?:#[0-9A-Fa-f]{6}|\\/c(olor)?)>') == '',
             if (split(_):1 != '/',
                 color_cache += split(':', tag):1,
                 for (range(length(color_cache)),
@@ -251,7 +251,7 @@ format_markdown(string) -> (
             continue();
         );
 
-        if (replace(_, '<(click:open_url:[^<>]+|\\/click)>') == '', //update to work with any type
+        if (is_tag && replace(_, '<(click:open_url:[^<>]+|\\/click)>') == '', //update to work with any type
             if (split(_):1 != '/',
                 click_cache += {'action' -> 'open_url', 'value' -> slice(_, 16, -2)},
                 delete(click_cache:(-1));
@@ -268,11 +268,39 @@ format_markdown(string) -> (
                     text_object:_ = true;
                 );
             );
+            
             if (color_cache, text_object:'color' = color_cache:(-1));
             if (click_cache, text_object:'clickEvent' = click_cache:(-1));
             formatted_list += text_object;
         );
     );
 
+    if (!formatted_list, formatted_list = ['']);
+
     return(encode_json(formatted_list));
+);
+
+json_to_markdown(json) -> (
+    string = '';
+    if (type(json) == 'string', json = decode_json(json));
+    if (type(json) == 'map', json = [json]);
+    for (json,
+        if (type(_) == 'string', string += _; continue());
+        tags = ['', ''];
+        for (pairs(_), if (_:0 != 'text' && _:0 != 'color' && _:1 != 'false',
+            tags:0 += '<' + _:0 + '>';
+            tags:1 = '</' + _:0 + '>' + tags:1,
+
+            if (_:0 == 'color', if (_:1 ~ '#',
+                    tags:0 += '<c:' + _:1 + '>';
+                    tags:1 = '</c>' + tags:1,
+
+                    tags:0 += '<' + _:1 + '>';
+                    tags:1 = '</' + _:1 + '>' + tags:1;
+            ));
+        ));
+        string += tags:0 + _:'text' + tags:1;
+    );
+
+    return(string);
 );

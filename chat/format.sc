@@ -18,5 +18,9 @@ __command() -> (
 	print(format('w &m = ', 's Strikethrough', 'w  &n = ', 'u Underline'));
 	print(format('w &o = ', 'i Italic            ', 'w &r = Reset'));
 	print(format('d ==============================='));
+	print(format('w *text*     = ', 'i Italic        ', 'w _text_     = ', 'i Italic'));
+	print(format('w **text**   = ', 'b Bold      ', 'w ***text***  = ', 'bi Bold Italic'));
+	print(format('w __text__ = ', 'u Underline', 'w   ~~text~~ = ', 's Strikethrough'));
+	print(format('d ==============================='));
 	exit();
 );

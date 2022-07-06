@@ -42,8 +42,8 @@ __on_player_interacts_with_block(player, hand, block, face, hitvec) -> (
 		);
 	);
 
-	set(block_pos, 'air');
-	set(block_pos, block, block_props, block_nbt);
+	without_updates(set(block_pos, 'air'));
+	without_updates(set(block_pos, block, block_props, block_nbt));
 );
 
 is_in_array(arr, val) -> (

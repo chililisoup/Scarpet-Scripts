@@ -8,7 +8,7 @@
 //
 // Requires the format_text library (util/format_text.scl)
 
-import('format_text', 'format_text');
+import('format_text', 'format_text', 'json_to_markdown');
 
 __config() -> {
 	'commands' -> {
@@ -19,6 +19,7 @@ __config() -> {
 		'hex' -> {
 			'type' -> 'term',
 			'suggester' -> _(args) -> (
+				if (args:'hex' ~ '[^0-9A-Fa-f]' || length(args:'hex') > 6, return([args:'hex' + 'INVALID']));
 				if (!length(args:'hex'),     return(['ffffff']));
 				if (length(args:'hex') == 1, return([args:'hex'*6]));
 				if (length(args:'hex') == 2, return([args:'hex'*3]));
@@ -44,20 +45,14 @@ stylize(hex) -> (
 	if (!name, exit(print(format('w [', 'd Stylize', 'w ] ', 'y Your item isn\'t renamed!'))));
 
 	itemNBT = parse_nbt(item:2);
+	name = json_to_markdown(name);
 
-	if (hex,
-		name = '[' + join('"},{"italic":"false","color":"#' + hex + '","text":"', split('#', name)) + ']',
-		
-		name = parse_nbt(name);
-		if (type(name) == 'map' && name:'text' && length(keys(name)) == 1,
-			name = format_text(name:'text');
-			name = decode_json(name);
-			name:0 = {'italic' -> 'false', 'text' -> ''};
-			name = encode_json(name),
-			
-			exit(print(format('w [', 'd Stylize', 'w ] ', 'y Unable to format already formatted items!')));
-		);
-	);
+	if (hex, name = replace(name, '(?<!\\\\)(?<![^\\\\]<[^>]+)(?<!^<[^>]+)#', '<c:#' + hex + '>'));
+
+	name = format_text(name);
+	name = decode_json(name);
+	put(name, 0, {'italic' -> 'false', 'text' -> ''}, 'insert');
+	name = encode_json(name);
 
 	itemNBT:'display':'Name' = name;
 	item:2 = encode_nbt(itemNBT);
