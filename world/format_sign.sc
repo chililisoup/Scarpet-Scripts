@@ -38,12 +38,12 @@ __on_player_interacts_with_block(player, hand, block, face, hitvec) -> (
 	for (range(1, 5),
 		text_nbt = decode_json(block_nbt:('Text' + _));
 		if (text_nbt:'text' && length(keys(text_nbt)) == 1,
-			block_nbt:('Text' + _) = '\'' + format_text(text_nbt:'text') + '\'';
+			block_nbt:('Text' + _) = '\'' + replace(format_text(text_nbt:'text'), '\\\\', '\\\\\\\\') + '\'';
 		);
 	);
 
-	without_updates(set(block_pos, 'air'));
-	without_updates(set(block_pos, block, block_props, block_nbt));
+	set(block_pos, 'air');
+	set(block_pos, block, block_props, block_nbt);
 );
 
 is_in_array(arr, val) -> (

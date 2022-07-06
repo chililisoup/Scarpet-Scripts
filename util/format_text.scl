@@ -1,8 +1,10 @@
-// Takes in a string and returns a string of Bukkit formatted JSON text
+// Takes in a string and returns a string of Bukkit/Markdown formatted JSON text
 
 // Usage:
-// import('format_text', 'format_text'); 
-// format_text(string);
+// import('format_text', 'format_text'); (Bukkit+Markdown)
+// import('format_text', 'format_bukkit'); (Bukkit only)
+// import('format_text', 'format_markdown'); (Markdown only)
+// format_<text|bukkit|markdown>(string);
 
 global_bukkit_color_codes = {
     '0' -> 'black',
@@ -32,8 +34,114 @@ global_bukkit_format_codes = {
     'o' -> 'italic'
 };
 
+global_markdown_codes = [
+    //[Hh][Tt]{2}[Pp][Ss]?:[-a-zA-Z0-9@:%_\+.~#?&//=]{2,256}\.[a-z]{2,4}\b(\/[-a-zA-Z0-9@:%_\+.~#?&//=]*)?
+    //website validator, would want extra options to enable it specifically tho
+    {
+        'regex' -> '(?<!\\\\)\\*\\*\\*(?:\\\\\\*|[^*])*(?:\\\\\\*|\\\\ |[^\\\\ *])+ *\\*\\*\\*',
+        'length' -> 3,
+        'tags' -> ['<b><i>', '</i></b>']
+    },
+    {
+        'regex' -> '(?<!\\\\)\\*\\*(?:\\\\\\*|[^*])*(?:\\\\\\*|\\\\ |[^\\\\ *])+ *\\*\\*',
+        'length' -> 2,
+        'tags' -> ['<b>', '</b>']
+    },
+    {
+        'regex' -> '(?<!\\\\)\\*(?:\\\\\\*|[^*])*(?:\\\\\\*|\\\\ |[^\\\\ *])+ *\\*',
+        'length' -> 1,
+        'tags' -> ['<i>', '</i>']
+    },
+    {
+        'regex' -> '(?<!\\\\)(?<![^\\\\]<[^>]+)(?<!^<[^>]+)__(?:\\\\_|[^<_]|<[^<>]+>)*(?:\\\\_|\\\\ |[^\\\\ <_]|<[^<>]+>)+ *__',
+        'length' -> 2,
+        'tags' -> ['<underline>', '</underline>']
+    },
+    {
+        'regex' -> '(?<!\\\\)(?<![^\\\\]<[^>]+)(?<!^<[^>]+)_(?:\\\\_|[^<_]|<[^<>]+>)*(?:\\\\_|\\\\ |[^\\\\ <_]|<[^<>]+>)+ *_',
+        'length' -> 1,
+        'tags' -> ['<i>', '</i>']
+    },
+    {
+        'regex' -> '(?<!\\\\)(?<![^\\\\]<[^>]+)(?<!^<[^>]+)~~(?:\\\\~|[^<~]|<[^<>]+>)*(?:\\\\~|\\\\ |[^\\\\ <~]|<[^<>]+>)+ *~~',
+        'length' -> 2,
+        'tags' -> ['<st>', '</st>']
+    }
+];
+
+global_markdown_markup = {
+    'i' -> 'italic',
+    'italic' -> 'italic',
+    'b' -> 'bold',
+    'bold' -> 'bold',
+    'st' -> 'strikethrough',
+    'strikethrough' -> 'strikethrough',
+    'underline' -> 'underlined',
+    'underlined' -> 'underlined',
+    'obf' -> 'obfuscated',
+    'obfuscated' -> 'obfuscated'
+};
+
+global_markup_colors = [
+    'black',
+    'dark_blue',
+    'dark_green',
+    'dark_aqua',
+    'dark_red',
+    'dark_purple',
+    'gold',
+    'gray',
+    'dark_blue',
+    'blue',
+    'green',
+    'aqua',
+    'red',
+    'light_purple',
+    'yellow',
+    'white',
+    'reset'
+];
+
 format_text(string) -> (
-    string = split('&(?=[0-9a-fk-or])', string);
+    string = split('(?<!\\\\)&(?=[0-9a-fk-or])', string);
+    new_string = '';
+    format_settings = {
+        'color' -> false,
+        'obfuscated' -> false,
+        'bold' -> false,
+        'strikethrough' -> false,
+        'underlined' -> false,
+        'italic' -> false
+    };
+
+    for (string,
+        if (_i && (color = global_bukkit_color_codes:slice(_, 0, 1)),
+            for (keys(format_settings),
+                if(format_settings:_,
+                    new_string += '</' + _ + '>';
+                    format_settings:_ = false;
+                );
+            );
+            format_settings:'color' = color;
+            new_string += '<' + color + '>';
+        );
+
+        if (_i && (format_setting = global_bukkit_format_codes:slice(_, 0, 1)) && !(format_settings:format_setting),
+            format_settings:format_setting = true;
+            new_string += '<' + format_setting + '>';
+        );
+
+        if (length(_) > 1,
+            if (_i, _ = slice(_, 1));
+            new_string += replace(_, '\\\\&', '&');
+        );
+    );
+
+    return(format_markdown(new_string));
+);
+
+format_bukkit(string) -> (
+    string = split('(?<!\\\\)&(?=[0-9a-fk-or])', string);
     formatted_list = [''];
     format_settings = {
         'color' -> false,
@@ -57,14 +165,112 @@ format_text(string) -> (
         if (length(_) > 1,
             if (_i, _ = slice(_, 1));
             text_object = {
-                'text' -> _
+                'text' -> replace(_, '\\\\&', '&')
             };
             for (keys(format_settings),
-                if (setting = format_settings:_,
-                    text_object:_ = setting;
+                if (format_settings:_,
+                    text_object:_ = true;
                 );
             );
-            formatted_list:length(formatted_list) = text_object;
+            formatted_list += text_object;
+        );
+    );
+
+    return(encode_json(formatted_list));
+);
+
+//Loosely based on Placeholder API
+format_markdown(string) -> (
+    formatted_list = [''];
+    color_cache = [];
+    click_cache = [];
+    hover_cache = [];
+    format_settings = {
+        'obfuscated' -> 0,
+        'bold' -> 0,
+        'strikethrough' -> 0,
+        'underlined' -> 0,
+        'italic' -> 0
+    };
+
+    for (global_markdown_codes,
+        while (string ~ (global_markdown_codes:_i:'regex'), length(string),
+            string = replace_first(
+                string,
+                global_markdown_codes:_i:'regex',
+                global_markdown_codes:_i:'tags':0
+                + slice(
+                    string ~ (global_markdown_codes:_i:'regex'),
+                    global_markdown_codes:_i:'length',
+                    -1 - global_markdown_codes:_i:'length'
+                )
+                + global_markdown_codes:_i:'tags':1;
+            );
+        );
+    );
+
+    string = replace(string, '(?<!(<split>)|\\\\)<(?!\\/?split>)(?=[^<>]+>)', '<split><');
+    string = replace(string, '(?<=[^\\\\]<[^<>]+)(?<!<\\/?split)>(?!<split>)', '><split>');
+    string = split('(<split>)+', string);
+    
+    for (string,
+        tag = replace(_, '[<\\/>]');
+        is_tag = replace(_, '(?<!\\\\)<\\/?[\\w:#]+>') == '';
+
+        if (is_tag && markup_tag = global_markdown_markup:tag,
+            format_settings:(markup_tag) += number(split(_):1 != '/') * 2 - 1;
+            if (format_settings:(markup_tag) < 0,
+                format_settings:(markup_tag) = 0;
+            );
+            continue();
+        );
+
+        if (is_tag && global_markup_colors ~ tag != null,
+            if (split(_):1 != '/',
+                color_cache += tag,
+                for (range(length(color_cache)),
+                    if (color_cache:(-1 - _i) == tag,
+                        delete(color_cache:(-1 - _i));
+                        break();
+                    );
+                );
+            );
+            continue();
+        );
+
+        if (replace(_, '<(c(olor)?:#[0-9A-Fa-f]{6}|\\/c(olor)?)>') == '',
+            if (split(_):1 != '/',
+                color_cache += split(':', tag):1,
+                for (range(length(color_cache)),
+                    if (replace(color_cache:(-1 - _i), '#[0-9A-Fa-f]{6}') == '',
+                        delete(color_cache:(-1 - _i));
+                        break();
+                    );
+                );
+            );
+            continue();
+        );
+
+        if (replace(_, '<(click:open_url:[^<>]+|\\/click)>') == '', //update to work with any type
+            if (split(_):1 != '/',
+                click_cache += {'action' -> 'open_url', 'value' -> slice(_, 16, -2)},
+                delete(click_cache:(-1));
+            );
+            continue();
+        );
+
+        if (length(_),
+            text_object = {
+                'text' -> replace(replace(replace(replace(_, '\\\\\\*', '*'), '\\\\_', '_'), '\\\\~', '~'),'\\\\<', '<')
+            };
+            for (keys(format_settings),
+                if (format_settings:_,
+                    text_object:_ = true;
+                );
+            );
+            if (color_cache, text_object:'color' = color_cache:(-1));
+            if (click_cache, text_object:'clickEvent' = click_cache:(-1));
+            formatted_list += text_object;
         );
     );
 

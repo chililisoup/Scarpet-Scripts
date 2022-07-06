@@ -29,7 +29,7 @@ lock_block(key) -> (
 
 	if (!current_block, exit(print(format('w [', 'd Lock', 'w ] ', 'y You\'re not looking at anything in range.'))));
 	if (!is_in_array(global_lockables, current_block), exit(print(format('w [', 'd Lock', 'w ] ', 'y This block can\'t be locked!'))));
-	if (name != replace(name, '[^A-Za-z0-9-_+.]'), exit(print(format('w [', 'd Lock', 'w ] ', 'y Invalid characters in key!'))));
+	if ('' != replace(name, '[A-Za-z0-9-_+.]'), exit(print(format('w [', 'd Lock', 'w ] ', 'y Invalid characters in key!'))));
 
 	block_pos = pos(current_block);
 	block_props = [];
