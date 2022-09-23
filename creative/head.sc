@@ -3,8 +3,8 @@
 
 __config() -> {
 	'commands' -> {
-		'<username>' -> ['giveHead', 1],
-		'<username> <amount>' -> 'giveHead',
+		'<username>' -> ['give_head', 1],
+		'<username> <amount>' -> 'give_head',
 	},
 	'arguments' -> {
 		'username' -> {
@@ -20,7 +20,7 @@ __config() -> {
 	}
 };
 
-giveHead(name, amount) -> (
+give_head(name, amount) -> (
 	run('give @s minecraft:player_head{SkullOwner:"' + name + '"} ' + amount);
 	exit();
 );

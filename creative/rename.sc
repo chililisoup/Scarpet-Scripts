@@ -26,7 +26,7 @@ rename(text) -> (
 
 	text = format_text(text);
     text = decode_json(text);
-    text:0 = {'italic' -> 'false', 'text' -> ''};
+    if (!text:0:'italic', text:0:'italic' = false);
     text = encode_json(text);
 
 	if (nbt != 'null',

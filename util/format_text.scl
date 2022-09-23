@@ -215,7 +215,7 @@ format_markdown(string) -> (
     
     for (string,
         tag = replace(_, '[<\\/>]');
-        is_tag = _ && replace(_, '(?<!\\\\)<\\/?[\\w:#]+>') == '';
+        is_tag = _ && replace(_, '(?<!\\\\)<\\/?[\\w:#/.\\-~?&$+!*`(),]+>') == '';
 
         if (is_tag && markup_tag = global_markdown_markup:tag,
             format_settings:(markup_tag) += number(split(_):1 != '/') * 2 - 1;
