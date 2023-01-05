@@ -162,7 +162,7 @@ format_bukkit(string) -> (
             format_settings:format_setting = true;
         );
 
-        if (length(_) > 1,
+        if (length(_) > 1 || _ == '&',
             if (_i, _ = slice(_, 1));
             text_object = {
                 'text' -> replace(_, '\\\\&', '&')
