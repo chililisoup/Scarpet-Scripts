@@ -1,4 +1,4 @@
-// Renames held item using Bukkit formatting
+// Renames held item
 // Requires the format_text library (util/format_text.scl)
 
 import('format_text', 'format_text');
