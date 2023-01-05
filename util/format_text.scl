@@ -131,7 +131,7 @@ format_text(string) -> (
             new_string += '<' + format_setting + '>';
         );
 
-        if (length(_) > 1,
+        if (length(_) > 1 || _ == '&',
             if (_i, _ = slice(_, 1));
             new_string += replace(_, '\\\\&', '&');
         );
