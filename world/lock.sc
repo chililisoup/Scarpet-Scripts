@@ -59,3 +59,7 @@ is_in_array(arr, val) -> (
 	for (arr, if (val == _, return(true)));
 	return(false);
 );
+
+__on_player_breaks_block(player, block) -> (
+	if (block_data(pos(block)):'Lock', return('cancel'));
+);
