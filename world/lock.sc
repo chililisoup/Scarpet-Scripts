@@ -41,7 +41,6 @@ __config() -> {
 
 lock_block(key) -> (
 	plr = player();
-	current_gamemode = plr ~ 'gamemode';
 	current_block = query(plr, 'trace', 4.5, 'blocks');
 
 	if (!current_block, exit(print(format('w [', 'd Lock', 'w ] ', 'y You\'re not looking at anything in range.'))));
