@@ -24,7 +24,7 @@ global_sign_types = [
 
 __config() -> {};
 
-__on_player_interacts_with_block(player, hand, block, face, hitvec) -> (
+__on_player_right_clicks_block(player, item_tuple, hand, block, face, hitvec) -> (
 	if (!is_in_array(global_sign_types, block), exit());
 
 	block_pos = pos(block);
