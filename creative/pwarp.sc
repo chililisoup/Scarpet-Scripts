@@ -12,6 +12,7 @@ __config() -> {
     'arguments' -> {
         'destination' -> {
             'type' -> 'term',
+            'case_sensitive' -> false,
             'suggester' -> _(args) -> (
 				json = read_file('warp_list_' + player() ~ 'uuid', 'json');
                 destinations = [];
