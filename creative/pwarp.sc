@@ -50,7 +50,7 @@ warp(destination) -> (
     warp = find_warp(destination);
     if (!warp, exit(print(format('w [', 'd PWarp', 'w ] ', 'y Warp ', 'wb ' + destination, 'y  does not exist!'))));
 
-    modify(player(), 'pos', warp:'pos');
+    run('execute in ' + warp:'dim' + ' run tp ' + warp:'pos':0 + ' ' + warp:'pos':1 + ' ' + warp:'pos':2);
     exit(print(format('w [', 'd PWarp', 'w ] ', 'y Successfully warped to ', 'wb ' + warp:'name')));
 );
 
@@ -66,22 +66,29 @@ list_warps() -> (
 create_warp(name) -> (
     if (find_warp(name), exit(print(format('w [', 'd PWarp', 'w ] ', 'y A warp with that name already exists!'))));
 
-    pos = query(player(), 'pos');
+    pos = player() ~ 'pos';
     pos:0 = round(pos:0 * 10) / 10;
     pos:1 = round(pos:1 * 10) / 10;
     pos:2 = round(pos:2 * 10) / 10;
 
-    print(format('w [', 'd PWarp', 'w ] ', 'y Successfully created warp ', 'wb ' + name, 'y  at ', 'wb ' +
-        pos:0 + ', ' + 
-        pos:1 + ', ' + 
-        pos:2)
+    dim = player() ~ 'dimension';
+
+    print(
+        format(
+            'w [', 'd PWarp', 'w ] ', 'y Successfully created warp ', 'wb ' + name, 'y  at ', 'wb ' +
+            pos:0 + ', ' + 
+            pos:1 + ', ' + 
+            pos:2,
+            'y  in ', 'wb ' + dim
+        )
     );
 
     json = read_file('warp_list_' + player() ~ 'uuid', 'json');
     if (!json, json = []);
     json += {
         'name' -> name,
-        'pos' -> pos
+        'pos' -> pos,
+        'dim' -> dim
     };
     write_file('warp_list_' + player() ~ 'uuid', 'json', json);
 
