@@ -6,6 +6,7 @@ import('format_text', 'format_text');
 __config() -> {};
 
 __on_player_right_clicks_block(player, item_tuple, hand, block, face, hitvec) -> (
+	if (item_tuple, exit());
 	if (!block_tags(block, 'all_signs'), exit());
 	if (!player ~ 'sneaking', exit());
 
