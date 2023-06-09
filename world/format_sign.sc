@@ -3,29 +3,11 @@
 
 import('format_text', 'format_text');
 
-global_sign_types = [
-	'oak_sign',
-	'spruce_sign',
-	'birch_sign',
-	'jungle_sign',
-	'acacia_sign',
-	'dark_oak_sign',
-	'crimson_sign',
-	'warped_sign',
-	'oak_wall_sign',
-	'spruce_wall_sign',
-	'birch_wall_sign',
-	'jungle_wall_sign',
-	'acacia_wall_sign',
-	'dark_oak_wall_sign',
-	'crimson_wall_sign',
-	'warped_wall_sign'
-];
-
 __config() -> {};
 
 __on_player_right_clicks_block(player, item_tuple, hand, block, face, hitvec) -> (
-	if (!is_in_array(global_sign_types, block), exit());
+	if (!block_tags(block, 'all_signs'), exit());
+	if (!player ~ 'sneaking', exit());
 
 	block_pos = pos(block);
 	block_props = [];
@@ -34,16 +16,31 @@ __on_player_right_clicks_block(player, item_tuple, hand, block, face, hitvec) ->
 		block_props:(_i * 2 + 1) = block_state(block, _);
 	);
 
-	block_nbt = block_data(block_pos);
-	for (range(1, 5),
-		text_nbt = decode_json(block_nbt:('Text' + _));
-		if (text_nbt:'text' && length(keys(text_nbt)) == 1,
-			block_nbt:('Text' + _) = '\'' + replace(format_text(text_nbt:'text'), '\\\\', '\\\\\\\\') + '\'';
+	block_nbt = parse_nbt(block_data(block_pos));
+	front_messages = block_nbt:'front_text':'messages';
+	back_messages = block_nbt:'back_text':'messages';
+
+	for (range(0, 4),
+		front_text = decode_json(front_messages:_);
+		back_text = decode_json(back_messages:_);
+
+		if (length(front_text:'text') && length(keys(front_text)) == 1,
+			front_messages:_ = format_text(front_text:'text');
+		);
+		if (length(back_text:'text') && length(keys(back_text)) == 1,
+			back_messages:_ = format_text(back_text:'text');
 		);
 	);
 
+	block_nbt:'front_text':'messages' = front_messages;
+	block_nbt:'back_text':'messages' = back_messages;
+
+	block_nbt = encode_nbt(block_nbt);
+
 	without_updates(set(block_pos, 'air'));
 	without_updates(set(block_pos, block, block_props, block_nbt));
+	
+	return('cancel');
 );
 
 is_in_array(arr, val) -> (

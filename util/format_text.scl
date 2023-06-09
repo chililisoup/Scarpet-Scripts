@@ -117,7 +117,7 @@ format_text(string) -> (
     for (string,
         if (_i && (color = global_bukkit_color_codes:slice(_, 0, 1)),
             for (keys(format_settings),
-                if(format_settings:_,
+                if (format_settings:_,
                     new_string += '</' + _ + '>';
                     format_settings:_ = false;
                 );
@@ -131,7 +131,7 @@ format_text(string) -> (
             new_string += '<' + format_setting + '>';
         );
 
-        if (length(_) > 1 || _ == '&',
+        if (length(_) > 1 || _ == '&' || !_i,
             if (_i, _ = slice(_, 1));
             new_string += replace(_, '\\\\&', '&');
         );
@@ -162,7 +162,7 @@ format_bukkit(string) -> (
             format_settings:format_setting = true;
         );
 
-        if (length(_) > 1 || _ == '&',
+        if (length(_) > 1 || _ == '&' || !_i,
             if (_i, _ = slice(_, 1));
             text_object = {
                 'text' -> replace(_, '\\\\&', '&')
