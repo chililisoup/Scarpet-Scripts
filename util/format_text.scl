@@ -283,6 +283,7 @@ format_markdown(string) -> (
 json_to_markdown(json) -> (
     string = '';
     if (type(json) == 'string', json = decode_json(json));
+    if (type(json) == 'string', json = [{'text' -> json}]);
     if (type(json) == 'map', json = [json]);
     for (json,
         if (type(_) == 'string', string += _; continue());
