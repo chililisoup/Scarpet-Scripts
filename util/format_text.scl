@@ -288,7 +288,7 @@ json_to_markdown(json) -> (
     for (json,
         if (type(_) == 'string', string += _; continue());
         tags = ['', ''];
-        for (pairs(_), if (_:0 != 'text' && _:0 != 'color' && _:1 != 'false',
+        for (pairs(_), if (_:0 != 'text' && _:0 != 'color' && _:1 != false,
             tags:0 += '<' + _:0 + '>';
             tags:1 = '</' + _:0 + '>' + tags:1,
 
