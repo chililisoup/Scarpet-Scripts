@@ -25,11 +25,11 @@ __on_player_right_clicks_block(player, item_tuple, hand, block, face, hitvec) ->
 		front_text = decode_json(front_messages:_);
 		back_text = decode_json(back_messages:_);
 
-		if (length(front_text:'text') && length(keys(front_text)) == 1,
-			front_messages:_ = format_text(front_text:'text');
+		if (length(front_text) && length(keys(front_text)) == 0,
+			front_messages:_ = format_text(front_text);
 		);
-		if (length(back_text:'text') && length(keys(back_text)) == 1,
-			back_messages:_ = format_text(back_text:'text');
+		if (length(back_text) && length(keys(back_text)) == 0,
+			back_messages:_ = format_text(back_text);
 		);
 	);
 
