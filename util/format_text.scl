@@ -15,7 +15,7 @@ global_bukkit_color_codes = {
     '5' -> 'dark_purple',
     '6' -> 'gold',
     '7' -> 'gray',
-    '8' -> 'dark_blue',
+    '8' -> 'dark_gray',
     '9' -> 'blue',
     'a' -> 'green',
     'b' -> 'aqua',
@@ -91,7 +91,7 @@ global_markup_colors = [
     'dark_purple',
     'gold',
     'gray',
-    'dark_blue',
+    'dark_gray',
     'blue',
     'green',
     'aqua',
@@ -215,7 +215,7 @@ format_markdown(string) -> (
     
     for (string,
         tag = replace(_, '[<\\/>]');
-        is_tag = _ && replace(_, '(?<!\\\\)<\\/?[\\w:#/.\\-~?&$+!*`(),]+>') == '';
+        is_tag = _ && replace(_, '(?<!\\\\)<\\/?[\\w:#/.\\-~?&$+!*`(),=]+>') == '';
 
         if (is_tag && markup_tag = global_markdown_markup:tag,
             format_settings:(markup_tag) += number(split(_):1 != '/') * 2 - 1;
@@ -283,11 +283,13 @@ format_markdown(string) -> (
 json_to_markdown(json) -> (
     string = '';
     if (type(json) == 'string', json = decode_json(json));
+    if (type(json) == 'string', json = [{'text' -> json}]);
     if (type(json) == 'map', json = [json]);
+
     for (json,
         if (type(_) == 'string', string += _; continue());
         tags = ['', ''];
-        for (pairs(_), if (_:0 != 'text' && _:0 != 'color' && _:1 != 'false',
+        for (pairs(_), if (_:0 != 'text' && _:0 != 'color' && _:1 != false,
             tags:0 += '<' + _:0 + '>';
             tags:1 = '</' + _:0 + '>' + tags:1,
 

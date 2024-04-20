@@ -51,7 +51,7 @@ stylize(hex) -> (
 
 	name = format_text(name);
 	name = decode_json(name);
-	put(name, 0, {'italic' -> 'false', 'text' -> ''}, 'insert');
+	put(name, 0, {'italic' -> false, 'text' -> ''}, 'insert');
 	name = encode_json(name);
 
 	itemNBT:'display':'Name' = name;
