@@ -298,9 +298,9 @@ list_warps(page) -> (
     if ((page - 1) * 8 > length(json), page = max_page);
     print(format('db Available warps', 'w :'));
     c_for (i = (page - 1) * 8, i < page * 8 && i < length(json), i += 1,
-        print(format('y  ' + json:i:'name', '^w Click here to warp', '!/warp ' + json:i:'name'))
+        print(format('y  ' + json:i:'name', '^w Click here to warp', '!/pwarp ' + json:i:'name'))
     );
-    print(format('w [', 'cb <', '!/warp list ' + max(page - 1, 1), 'w ] ', 'l ' + page, 'w /', 'l ' + max_page, 'w  [', 'cb >', '!/warp list ' + (page + 1), 'w ] '))
+    print(format('w [', 'cb <', '!/pwarp list ' + max(page - 1, 1), 'w ] ', 'l ' + page, 'w /', 'l ' + max_page, 'w  [', 'cb >', '!/pwarp list ' + (page + 1), 'w ] '))
 );
 
 create_warp(name) -> (
