@@ -88,7 +88,13 @@ open_anvil_screen(item, item_data, name, callback) -> (
 
 open_warp_creation_menu() -> (
     open_anvil_screen('oak_sign', {'display' -> {'Name' -> '""'}}, 'Enter PWarp Name...', _(screen) -> (
-        name = item_display_name(inventory_get(screen, 2));
+        item = inventory_get(screen, 2);
+        if (!item:2:'display',
+            close_screen(screen);
+            return();
+        );
+        
+        name = item_display_name(item);
         create_warp(name);
         close_screen(screen);
         open_warp_edit_menu(find_warp(name));
@@ -97,7 +103,14 @@ open_warp_creation_menu() -> (
 
 open_warp_rename_menu(warp) -> (
     open_anvil_screen(warp:'item' || 'oak_sign', warp:'item_data' || {'display' -> {'Name' -> encode_json({'text' -> warp:'name', 'italic' -> false})}}, 'Rename PWarp...', _(screen, outer(warp)) -> (
-        name = item_display_name(inventory_get(screen, 2));
+        item = inventory_get(screen, 2);
+        if (!item:2:'display',
+            close_screen(screen);
+            open_warp_edit_menu(warp);
+            return();
+        );
+
+        name = item_display_name(item);
         if (find_warp(name),
             print(format('w [', 'd PWarp', 'w ] ', 'y A warp with that name already exists!'));
             close_screen(screen);
