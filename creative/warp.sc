@@ -248,9 +248,9 @@ open_warp_menu(page, edit_mode) -> (
     json = slice(read_file('warp_list', 'json'), 45 * page);
     json_rows = ceil(length(json) / 9);
     screen_size = min(json_rows + 1, 6);
-    bottom_row_slot = json_rows * 9;
+    bottom_row_slot = min(json_rows * 9, 45);
 
-    screen = create_screen(player(), 'generic_9x' + screen_size, 'Warp Menu', _(screen, player, action, data, outer(json), outer(bottom_row_slot)) -> (
+    screen = create_screen(player(), 'generic_9x' + screen_size, 'Warp Menu', _(screen, player, action, data, outer(json), outer(bottom_row_slot), outer(json_rows), outer(page)) -> (
         if (action != 'pickup', return('cancel'));
 
         edit_mode = inventory_get(screen, bottom_row_slot + 3):0 != 'wooden_pickaxe';
@@ -265,8 +265,19 @@ open_warp_menu(page, edit_mode) -> (
             return('cancel');
         );
 
-        if (data:'slot' >= 45, return('cancel'));
-        if (data:'slot' >= length(json), return('cancel'));
+        if (data:'slot' == bottom_row_slot + 1 && page > 0,
+            close_screen(screen);
+            open_warp_menu(page - 1, edit_mode);
+            return('cancel');
+        );
+
+        if (data:'slot' == bottom_row_slot + 7 && json_rows > 5,
+            close_screen(screen);
+            open_warp_menu(page + 1, edit_mode);
+            return('cancel');
+        );
+
+        if (data:'slot' >= length(json) || data:'slot' >= 45, return('cancel'));
 
         close_screen(screen);
         if (edit_mode,
@@ -276,7 +287,8 @@ open_warp_menu(page, edit_mode) -> (
         return('cancel');
     ));
 
-    for (json, if (_i >= 45, break);
+    for (json,
+        if (_i >= 45, break());
         item = _:'item' || 'oak_sign';
         item_data = _:'item_data' || {'display' -> {'Name' -> encode_json({'text' -> _:'name', 'italic' -> false})}};
         inventory_set(screen, _i, 1, item, encode_nbt(item_data));
