@@ -19,51 +19,48 @@ __config() -> {
 lore() -> (
 	plr = player();
 
-	item = query(plr, 'holds');
+	item = plr ~ 'holds';
 	if (!item, exit(print(format('w [', 'd Lore', 'w ] ', 'y You aren\'t holding anything!'))));
 
-	name = item:2:'display':'Name';
+
+	item_nbt = parse_nbt(item:2);
+
+	name = item_nbt:'components':'minecraft:custom_name';
 	if (!name, exit(print(format('w [', 'd Lore', 'w ] ', 'y Your item isn\'t renamed!'))));
 
-	lore = item:2:'display':'Lore';
-	name = replace(name, '\'', '\\\\\'');
+	lore = item_nbt:'components':'minecraft:lore';
 	if (lore,
-		lore = replace(lore, '.{1}$');
-		lore += ',\'' + name + '\']',
-		lore = '[\'' + name + '\']';
+		lore += name,
+		lore = [name];
 	);
-	item:2:'display' = '{Lore: ' + lore + '}';
 
-	inventory_set(plr, query(plr, 'selected_slot'), item:1, item:0, item:2);
-
-	exit();
+	delete(item_nbt:'components':'minecraft:custom_name');
+	item_nbt:'components':'minecraft:lore' = lore;
+	item_nbt = encode_nbt(item_nbt);
+	inventory_set(plr, plr ~ 'selected_slot', item:1, item:0, item_nbt);
 );
 
 clear(lines) -> (
 	plr = player();
 
-	item = query(plr, 'holds');
+	item = plr ~ 'holds';
 	if (!item, exit(print(format('w [', 'd Lore', 'w ] ', 'y You aren\'t holding anything!'))));
 
-	nbt = parse_nbt(item:2);
-	if (!nbt:'display':'Lore', exit(print(format('w [', 'd Lore', 'w ] ', 'y No lore to clear.'))));
+	item_nbt = parse_nbt(item:2);
+	if (!item_nbt:'components':'minecraft:lore', exit(print(format('w [', 'd Lore', 'w ] ', 'y No lore to clear.'))));
 
 	if (lines,
 		for (range(0, lines),
-			delete(nbt:'display':'Lore', -1);
-			if (!length(nbt:'display':'Lore'),
-				delete(nbt:'display':'Lore');
+			delete(item_nbt:'components':'minecraft:lore', -1);
+			if (!length(item_nbt:'components':'minecraft:lore'),
+				delete(item_nbt:'components':'minecraft:lore');
 				break();
 			);
 		),
-		delete(nbt:'display':'Lore');
+		delete(item_nbt:'components':'minecraft:lore');
 	);
 	
-	if (!nbt:'display', delete(nbt:'display'));
-	nbt = encode_nbt(nbt);
-	if (!nbt, nbt = null);
-
-	inventory_set(plr, query(plr, 'selected_slot'), item:1, item:0, nbt);
-	
-	exit();
+	if (!item_nbt:'components':'minecraft:lore', delete(item_nbt:'components':'minecraft:lore'));
+	item_nbt = encode_nbt(item_nbt);
+	inventory_set(plr, plr ~ 'selected_slot', item:1, item:0, item_nbt);
 );

@@ -38,13 +38,12 @@ stylize(hex) -> (
 
 	plr = player();
 
-	item = query(plr, 'holds');
+	item = plr ~ 'holds';
 	if (!item, exit(print(format('w [', 'd Stylize', 'w ] ', 'y You aren\'t holding anything!'))));
 
-	name = item:2:'display':'Name';
+	name = item:2:'components':'minecraft:custom_name';
 	if (!name, exit(print(format('w [', 'd Stylize', 'w ] ', 'y Your item isn\'t renamed!'))));
 
-	itemNBT = parse_nbt(item:2);
 	name = json_to_markdown(name);
 
 	if (hex, name = replace(name, '(?<!\\\\)(?<![^\\\\]<[^>]+)(?<!^<[^>]+)#', '<c:#' + hex + '>'));
@@ -54,9 +53,8 @@ stylize(hex) -> (
 	put(name, 0, {'italic' -> false, 'text' -> ''}, 'insert');
 	name = encode_json(name);
 
-	itemNBT:'display':'Name' = name;
-	item:2 = encode_nbt(itemNBT);
-	inventory_set(plr, query(plr, 'selected_slot'), item:1, item:0, item:2);
-	
-	exit();
+	item_nbt = parse_nbt(item:2);
+	item_nbt:'components':'minecraft:custom_name' = name;
+	item_nbt = encode_nbt(item_nbt);
+	inventory_set(plr, plr ~ 'selected_slot', item:1, item:0, item_nbt);
 );

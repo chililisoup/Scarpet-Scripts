@@ -3,6 +3,5 @@
 __config() -> {};
 
 __command() -> (
-	run('tellraw @a [{"selector":"@s"},{"text":" has hacked the server! WTF!","color":"red","bold":"true"}]');
-	exit();
+	run('tellraw @a [{"selector":"@s"},{"text":" has hacked the server! WTF!","color":"red","bold":true}]');
 );
