@@ -71,7 +71,7 @@ warp(destination) -> (
     execute_warp(warp);
 );
 
-open_anvil_screen(item, item_data, name, callback) -> (
+open_anvil_screen(item_nbt, name, callback) -> (
     screen = create_screen(player(), 'anvil', name, _(screen, player, action, data, outer(callback)) -> (
         if (!screen_property(screen, 'open'), return('cancel'));
         screen_property(screen, 'level_cost', 1);
@@ -82,18 +82,19 @@ open_anvil_screen(item, item_data, name, callback) -> (
         return('cancel');
     ));
 
-    inventory_set(screen, 0, 1, item, encode_nbt(item_data));
+    inventory_set(screen, 0, null, null, encode_nbt(item_nbt));
     screen_property(screen, 'level_cost', 0);
 );
 
 open_warp_creation_menu() -> (
-    open_anvil_screen('oak_sign', {'display' -> {'Name' -> '""'}}, 'Enter PWarp Name...', _(screen) -> (
+    inventory_set(screen, bottom_row_slot + 5, null, null, encode_nbt({'count' -> 1, 'id' -> 'oak_sign', 'components' -> {'minecraft:enchantment_glint_override' -> true, 'minecraft:item_name' -> '"Create new warp"'}}));
+    open_anvil_screen({'count' -> 1, 'id' -> 'oak_sign', 'components' -> {'minecraft:item_name' -> '""'}}, 'Enter PWarp Name...', _(screen) -> (
         item = inventory_get(screen, 2);
-        if (!item:2:'display',
+        if (!item:2:'components':'minecraft:custom_name',
             close_screen(screen);
             return();
         );
-        
+
         name = item_display_name(item);
         create_warp(name);
         close_screen(screen);
@@ -102,9 +103,20 @@ open_warp_creation_menu() -> (
 );
 
 open_warp_rename_menu(warp) -> (
-    open_anvil_screen(warp:'item' || 'oak_sign', warp:'item_data' || {'display' -> {'Name' -> encode_json({'text' -> warp:'name', 'italic' -> false})}}, 'Rename PWarp...', _(screen, outer(warp)) -> (
+    item_nbt = {
+        'count' -> 1,
+        'id' -> warp:'item' || 'oak_sign',
+        'components' -> {}
+    };
+    if (warp:'components',
+        item_nbt:'components' = copy(warp:'components');
+    );
+    item_nbt:'components':'minecraft:item_name' = encode_json({'text' -> warp:'name', 'color' -> 'white'});
+    delete(item_nbt:'components':'minecraft:custom_name');
+
+    open_anvil_screen(item_nbt, 'Rename PWarp...', _(screen, outer(warp)) -> (
         item = inventory_get(screen, 2);
-        if (!item:2:'display',
+        if (!item:2:'components':'minecraft:item_name',
             close_screen(screen);
             open_warp_edit_menu(warp);
             return();
@@ -147,6 +159,21 @@ open_warp_edit_menu(warp) -> (
     screen = create_screen(player(), 'generic_9x3', 'PWarp Edit Menu', _(screen, player, action, data, outer(warp)) -> (
         if (action != 'pickup', return('cancel'));
 
+        if (data:'slot' == 4,
+            slot = inventory_find(player, null);
+            if (slot != null,
+                item_nbt = {
+                    'count' -> 1,
+                    'id' -> warp:'item' || 'oak_sign',
+                };
+                if (warp:'components',
+                    item_nbt:'components' = warp:'components';
+                );
+                inventory_set(player, slot, null, null, encode_nbt(item_nbt));
+            );
+            return('cancel');
+        );
+
         if (data:'slot' == 9,
             index = find_warp_index(warp);
             move_warp(warp, index, max(index - 1, 0));
@@ -154,7 +181,7 @@ open_warp_edit_menu(warp) -> (
         );
         
         if (data:'slot' == 10,
-            json = read_file('warp_list_' + player ~ 'uuid', 'json');
+            json = read_file('warp_list_' + player() ~ 'uuid', 'json');
             index = find_warp_index(warp);
             move_warp(warp, index, min(index + 1, length(json) - 1));
             return('cancel');
@@ -207,12 +234,24 @@ open_warp_edit_menu(warp) -> (
             item = inventory_get(screen, 25):0;
 
             if (item == 'barrier',
-                inventory_set(screen, 25, 1, 'red_terracotta', encode_nbt({'display' -> {'Name' -> encode_json({'text' -> 'Click 2 more times to delete', 'italic' -> false, 'color' -> 'red'})}}));
+                inventory_set(screen, 25, null, null, encode_nbt({
+                    'count' -> 1,
+                    'id' -> 'red_terracotta',
+                    'components' -> {
+                        'minecraft:item_name' -> '{"text":"Click 2 more times to delete","color":"red"}'
+                    }
+                }));
                 return('cancel');
             );
 
             if (item == 'red_terracotta',
-                inventory_set(screen, 25, 1, 'bedrock', encode_nbt({'display' -> {'Name' -> encode_json({'text' -> 'Click 1 more time to delete', 'italic' -> false, 'color' -> 'red'})}}));
+                inventory_set(screen, 25, null, null, encode_nbt({
+                    'count' -> 1,
+                    'id' -> 'bedrock',
+                    'components' -> {
+                        'minecraft:item_name' -> '{"text":"Click 1 more time to delete","color":"red"}'
+                    }
+                }));
                 return('cancel');
             );
 
@@ -225,37 +264,81 @@ open_warp_edit_menu(warp) -> (
             item = inventory_get(screen, data:'slot');
             if (!item, return('cancel'));
             warp:'item' = item:0;
+
+            item_nbt = {
+                'count' -> 1,
+                'id' -> item:0,
+                'components' -> {}
+            };
+
+            components = parse_nbt(item:2):'components';
+            if (components,
+                warp:'components' = copy(components);
+                delete(warp:'components':'minecraft:item_name');
+                item_nbt:'components' = components,
+
+                delete(warp:'components');
+            );
+            item_nbt:'components':'minecraft:item_name' = encode_json({'text' -> warp:'name', 'color' -> 'white'});
+
+            inventory_set(screen, 4, null, null, encode_nbt(item_nbt));
             edit_warp(warp, warp);
-            inventory_set(screen, 4, 1, item:0, inventory_get(screen, 4):2);
         );
 
         return('cancel');
     ));
 
-    for (range(9), inventory_set(screen, _, 1, 'white_stained_glass_pane', encode_nbt({'display' -> {'Name' -> '""'}})));
-    for (range(9), inventory_set(screen, _ + 18, 1, 'white_stained_glass_pane', encode_nbt({'display' -> {'Name' -> '""'}})));
+    for (range(9), inventory_set(screen, _, null, null, encode_nbt({'count' -> 1, 'id' -> 'white_stained_glass_pane', 'components' -> {'minecraft:item_name' -> '""'}})));
+    for (range(9), inventory_set(screen, _ + 18, null, null, encode_nbt({'count' -> 1, 'id' -> 'white_stained_glass_pane', 'components' -> {'minecraft:item_name' -> '""'}})));
 
-    inventory_set(screen, 4, 1, warp:'item' || 'oak_sign', encode_nbt(warp:'item_data' || {'display' -> {'Name' -> encode_json({'text' -> warp:'name', 'italic' -> false})}}));
+    item_nbt = {
+        'count' -> 1,
+        'id' -> warp:'item' || 'oak_sign',
+        'components' -> {}
+    };
+    if (warp:'components',
+        item_nbt:'components' = copy(warp:'components');
+    );
+    item_nbt:'components':'minecraft:item_name' = encode_json({'text' -> warp:'name', 'color' -> 'white'});
+    inventory_set(screen, 4, null, null, encode_nbt(item_nbt));
     
-    inventory_set(screen, 9, 1, 'iron_ingot', encode_nbt({'display' -> {'Name' -> encode_json({'text' -> 'Push up in list', 'italic' -> false})}}));
-    inventory_set(screen, 10, 1, 'iron_nugget', encode_nbt({'display' -> {'Name' -> encode_json({'text' -> 'Push down in list', 'italic' -> false})}}));
+    inventory_set(screen, 9, null, null, encode_nbt({'count' -> 1, 'id' -> 'iron_ingot', 'components' -> {'minecraft:item_name' -> '"Push up in list"'}}));
+    inventory_set(screen, 10, null, null, encode_nbt({'count' -> 1, 'id' -> 'iron_nugget', 'components' -> {'minecraft:item_name' -> '"Push down in list"'}}));
 
-    inventory_set(screen, 12, 1, 'ender_pearl', encode_nbt({'display' -> {'Name' -> encode_json({'text' -> 'Reposition warp', 'italic' -> false})}}));
-    inventory_set(screen, 13, 1, 'glass_pane', encode_nbt({'display' -> {'Name' -> encode_json({'text' -> 'Click an inventory item to set custom item', 'italic' -> false})}}));
-    inventory_set(screen, 14, 1, 'name_tag', encode_nbt({'display' -> {'Name' -> encode_json({'text' -> 'Rename warp', 'italic' -> false})}}));
+    inventory_set(screen, 12, null, null, encode_nbt({'count' -> 1, 'id' -> 'ender_pearl', 'components' -> {'minecraft:item_name' -> '"Reposition warp"'}}));
+    inventory_set(screen, 13, null, null, encode_nbt({'count' -> 1, 'id' -> 'glass_pane', 'components' -> {'minecraft:item_name' -> '"Click an inventory item to set custom item"'}}));
+    inventory_set(screen, 14, null, null, encode_nbt({'count' -> 1, 'id' -> 'name_tag', 'components' -> {'minecraft:item_name' -> '"Rename warp"'}}));
 
-    inventory_set(screen, 16, 1, 'gold_ingot', encode_nbt({'display' -> {'Name' -> encode_json({'text' -> 'Push to front of list', 'italic' -> false})}}));
-    inventory_set(screen, 17, 1, 'gold_nugget', encode_nbt({'display' -> {'Name' -> encode_json({'text' -> 'Push to back of list', 'italic' -> false})}}));
+    inventory_set(screen, 16, null, null, encode_nbt({'count' -> 1, 'id' -> 'gold_ingot', 'components' -> {'minecraft:item_name' -> '"Push to front of list"'}}));
+    inventory_set(screen, 17, null, null, encode_nbt({'count' -> 1, 'id' -> 'gold_nugget', 'components' -> {'minecraft:item_name' -> '"Push to back of list"'}}));
 
-    inventory_set(screen, 19, 1, 'arrow', encode_nbt({'display' -> {'Name' -> encode_json({'text' -> 'Back', 'italic' -> false})}}));
-    inventory_set(screen, 25, 1, 'barrier', encode_nbt({'display' -> {'Name' -> encode_json({'text' -> 'Delete Warp', 'italic' -> false, 'color' -> 'red'})}}));
+    inventory_set(screen, 19, null, null, encode_nbt({'count' -> 1, 'id' -> 'arrow', 'components' -> {'minecraft:item_name' -> '"Back"'}}));
+    inventory_set(screen, 25, null, null, encode_nbt({'count' -> 1, 'id' -> 'barrier', 'components' -> {'minecraft:item_name' -> '{"text":"Delete Warp","color":"red"}'}}));
 );
 
 set_warp_menu_edit_mode(screen, slot, enabled) -> (
-    inventory_set(screen, slot, 1, enabled && 'diamond_pickaxe' || 'wooden_pickaxe', encode_nbt(
-        enabled && {'Enchantments' -> [{}], 'display' -> {'Name' -> encode_json({'text' -> 'Edit Mode ON', 'italic' -> false})}}
-        || {'display' -> {'Name' -> encode_json({'text' -> 'Edit Mode OFF', 'italic' -> false})}}
-    ));
+    item_nbt = {};
+
+    if (enabled,
+        item_nbt = {
+            'id' -> 'diamond_pickaxe',
+            'components' -> {
+                'minecraft:enchantment_glint_override' -> true,
+                'minecraft:item_name' -> '"Edit Mode ON"'
+            }
+        },
+
+        item_nbt = {
+            'id' -> 'wooden_pickaxe',
+            'components' -> {
+                'minecraft:item_name' -> '"Edit Mode OFF"'
+            }
+        }
+    );
+
+    item_nbt:'count' = 1;
+
+    inventory_set(screen, slot, null, null, encode_nbt(item_nbt));
 );
 
 open_warp_menu(page, edit_mode) -> (
@@ -303,16 +386,25 @@ open_warp_menu(page, edit_mode) -> (
 
     for (json,
         if (_i >= 45, break());
-        item = _:'item' || 'oak_sign';
-        item_data = _:'item_data' || {'display' -> {'Name' -> encode_json({'text' -> _:'name', 'italic' -> false})}};
-        inventory_set(screen, _i, 1, item, encode_nbt(item_data));
+        item_nbt = {
+            'count' -> '1',
+            'id' -> _:'item' || 'oak_sign',
+            'components' -> {}
+        };
+
+        if (_:'components',
+            item_nbt:'components' = copy(_:'components');
+        );
+        item_nbt:'components':'minecraft:item_name' = encode_json({'text' -> _:'name', 'color' -> 'white'});
+
+        inventory_set(screen, _i, null, null, encode_nbt(item_nbt));
     );
 
-    for (range(9), inventory_set(screen, _ + bottom_row_slot, 1, 'white_stained_glass_pane', encode_nbt({'display' -> {'Name' -> '""'}})));
-    if (page > 0, inventory_set(screen, bottom_row_slot + 1, 1, 'arrow', encode_nbt({'display' -> {'Name' -> encode_json({'text' -> 'Previous Page', 'italic' -> false})}})));
-    if (length(json) > 45, inventory_set(screen, bottom_row_slot + 7, 1, 'arrow', encode_nbt({'display' -> {'Name' -> encode_json({'text' -> 'Next Page', 'italic' -> false})}})));
+    for (range(9), inventory_set(screen, _ + bottom_row_slot, null, null, encode_nbt({'count' -> 1, 'id' -> 'white_stained_glass_pane', 'components' -> {'minecraft:item_name' -> '""'}})));
+    if (page > 0, inventory_set(screen, bottom_row_slot + 1, null, null, encode_nbt({'count' -> 1, 'id' -> 'arrow', 'components' -> {'minecraft:item_name' -> '"Previous Page"'}})));
+    if (length(json) > 45, inventory_set(screen, bottom_row_slot + 7, null, null, encode_nbt({'count' -> 1, 'id' -> 'arrow', 'components' -> {'minecraft:item_name' -> '"Next Page"'}})));
     set_warp_menu_edit_mode(screen, bottom_row_slot + 3, edit_mode);
-    inventory_set(screen, bottom_row_slot + 5, 1, 'oak_sign', encode_nbt({'Enchantments' -> [{}], 'display' -> {'Name' -> encode_json({'text' -> 'Create new warp', 'italic' -> false})}}));
+    inventory_set(screen, bottom_row_slot + 5, null, null, encode_nbt({'count' -> 1, 'id' -> 'oak_sign', 'components' -> {'minecraft:enchantment_glint_override' -> true, 'minecraft:item_name' -> '"Create new warp"'}}));
 );
 
 list_warps(page) -> (
@@ -323,9 +415,9 @@ list_warps(page) -> (
     if ((page - 1) * 8 > length(json), page = max_page);
     print(format('db Available warps', 'w :'));
     c_for (i = (page - 1) * 8, i < page * 8 && i < length(json), i += 1,
-        print(format('y  ' + json:i:'name', '^w Click here to warp', '!/pwarp ' + json:i:'name'))
+        print(format('y  ' + json:i:'name', '^w Click here to warp', '!/warp ' + json:i:'name'))
     );
-    print(format('w [', 'cb <', '!/pwarp list ' + max(page - 1, 1), 'w ] ', 'l ' + page, 'w /', 'l ' + max_page, 'w  [', 'cb >', '!/pwarp list ' + (page + 1), 'w ] '))
+    print(format('w [', 'cb <', '!/warp list ' + max(page - 1, 1), 'w ] ', 'l ' + page, 'w /', 'l ' + max_page, 'w  [', 'cb >', '!/warp list ' + (page + 1), 'w ] '))
 );
 
 create_warp(name) -> (

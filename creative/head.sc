@@ -21,6 +21,5 @@ __config() -> {
 };
 
 give_head(name, amount) -> (
-	run('give @s minecraft:player_head{SkullOwner:"' + name + '"} ' + amount);
-	exit();
+	run('give @s minecraft:player_head[profile="' + name + '"] ' + amount);
 );

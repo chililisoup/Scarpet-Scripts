@@ -1,4 +1,4 @@
-// Renames held item
+// Renames held item using Bukkit formatting
 // Requires the format_text library (util/format_text.scl)
 
 import('format_text', 'format_text');
@@ -22,26 +22,17 @@ rename(text) -> (
 	item = query(plr, 'holds');
 	if (!item, exit(print(format('w [', 'd Rename', 'w ] ', 'y You aren\'t holding anything!'))));
 
-    nbt = parse_nbt(item:2);
+    item_nbt = parse_nbt(item:2);
+	if (!item_nbt:'components', item_nbt:'components' = {});
 
 	text = format_text(text);
     text = decode_json(text);
     if (!text:0:'italic', text:0:'italic' = false);
     text = encode_json(text);
 
-	if (nbt != 'null',
-		if (nbt:'display',
-			if (nbt:'display':'Name',
-				nbt:'display':'Name' = text;
-			),
-			nbt:'display' = {'Name' -> text};
-		),
-		nbt = {'display' -> {'Name' -> text}};
-	);
-	
-	inventory_set(plr, query(plr, 'selected_slot'), item:1, item:0, encode_nbt(nbt));
-
-	exit();
+	item_nbt:'components':'minecraft:custom_name' = text;
+	item_nbt = encode_nbt(item_nbt);
+	inventory_set(plr, query(plr, 'selected_slot'), item:1, item:0, item_nbt);
 );
 
 clear_name() -> (
@@ -50,15 +41,12 @@ clear_name() -> (
 	item = query(plr, 'holds');
 	if (!item, exit(print(format('w [', 'd Rename', 'w ] ', 'y You aren\'t holding anything!'))));
 
-    nbt = parse_nbt(item:2);
+    item_nbt = parse_nbt(item:2);
 
-    delete(nbt:'display':'Name');
+	delete(item_nbt:'components':'minecraft:custom_name');
 
-    if (nbt:'display' == {}, delete(nbt:'display'));
-    if (!nbt || nbt == {} || nbt == 'null',
+    if (!item_nbt || item_nbt == {} || item_nbt == 'null',
         inventory_set(plr, query(plr, 'selected_slot'), item:1, item:0),
-        inventory_set(plr, query(plr, 'selected_slot'), item:1, item:0, encode_nbt(nbt));
+        inventory_set(plr, query(plr, 'selected_slot'), item:1, item:0, encode_nbt(item_nbt));
     );
-
-    exit();
 );
