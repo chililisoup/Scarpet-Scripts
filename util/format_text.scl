@@ -66,6 +66,11 @@ global_markdown_codes = [
         'regex' -> '(?<!\\\\)(?<![^\\\\]<[^>]+)(?<!^<[^>]+)~~(?:\\\\~|[^<~]|<[^<>]+>)*(?:\\\\~|\\\\ |[^\\\\ <~]|<[^<>]+>)+ *~~',
         'length' -> 2,
         'tags' -> ['<st>', '</st>']
+    },
+    {
+        'regex' -> '(?<!\\\\):[Ii][Tt][Ee][Mm]:',
+        'length' -> 0,
+        'tag' -> '<item />'
     }
 ];
 
@@ -195,6 +200,15 @@ format_markdown(string) -> (
 
     for (global_markdown_codes,
         while (string ~ (global_markdown_codes:_i:'regex'), length(string),
+            if (global_markdown_codes:_i:'length' == 0,
+                string = replace_first(
+                    string,
+                    global_markdown_codes:_i:'regex',
+                    global_markdown_codes:_i:'tag'
+                );
+                continue();
+            );
+
             string = replace_first(
                 string,
                 global_markdown_codes:_i:'regex',
@@ -256,13 +270,6 @@ format_markdown(string) -> (
             continue();
         );
 
-        selector = false;
-        if (is_tag && replace(_, '<(s(el(ector)?)?:@?[\\w\\d-]+ ?\\/?|\\/s(el(ector)?)?)>') == '',
-            if (split(_):1 != '/',
-                selector = split('[: \/]', tag):1;
-            );
-        );
-
         if (is_tag && replace(_, '<(click:open_url:[^<>]+|\\/click)>') == '', //update to work with any type
             if (split(_):1 != '/',
                 click_cache += {'action' -> 'open_url', 'value' -> slice(_, 16, -2)},
@@ -275,11 +282,24 @@ format_markdown(string) -> (
 
 
         text_object = false;
-        if (selector,
-            text_object = { 'selector' -> selector };
+        if (is_tag && replace(_, '<s(el(ector)?)?:@?[\\w\\d-]+ ?\\/?>') == '',
+            text_object = {
+                'selector' -> split('[: \/]', tag):1
+            };
         );
 
-        if (length(_) && selector == false,
+        if (is_tag && replace(_, '<item ?\\/?>') == '' && player() && player() ~ 'holds',
+            item = player() ~ 'holds';
+            text_object = {
+                'text' -> '[' + item_display_name(item) + ']',
+                'hoverEvent' -> {
+                    'action' -> 'show_item',
+                    'contents' -> parse_nbt(item:2)
+                }
+            };
+        );
+
+        if (!is_tag && length(_),
             text_object = {
                 'text' -> replace(replace(replace(replace(_, '\\\\\\*', '*'), '\\\\_', '_'), '\\\\~', '~'),'\\\\<', '<')
             };
