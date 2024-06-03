@@ -215,7 +215,7 @@ format_markdown(string) -> (
     
     for (string,
         tag = replace(_, '[<\\/>]');
-        is_tag = _ && replace(_, '(?<!\\\\)<\\/?[\\w:#/.\\-~?&$+!*`(),=]+>') == '';
+        is_tag = _ && replace(_, '(?<!\\\\)<\\/?[\\w@:#/.\\-~?&$+!*`(),=]+ ?\\/?>') == '';
 
         if (is_tag && markup_tag = global_markdown_markup:tag,
             format_settings:(markup_tag) += number(split(_):1 != '/') * 2 - 1;
@@ -238,11 +238,16 @@ format_markdown(string) -> (
             continue();
         );
 
-        if (is_tag && replace(_, '<(c(olor)?:#[0-9A-Fa-f]{6}|\\/c(olor)?)>') == '',
+        if (is_tag && replace(_, '<(c(olor)?:#?([0-9A-Fa-f]{3}){1,2}|\\/c(olor)?)>') == '',
             if (split(_):1 != '/',
-                color_cache += split(':', tag):1,
+                color_cache += '#' + split(':#?', tag):1,
+
                 for (range(length(color_cache)),
-                    if (replace(color_cache:(-1 - _i), '#[0-9A-Fa-f]{6}') == '',
+                    if (replace(color_cache:(-1 - _i), '#?([0-9A-Fa-f]{3}){1,2}') == '',
+                        delete(color_cache:(-1 - _i));
+                        break();
+                    );
+                    if (replace(color_cache:(-1 - _i), '#?([0-9A-Fa-f]{3}){1,2}') == '',
                         delete(color_cache:(-1 - _i));
                         break();
                     );
@@ -251,25 +256,57 @@ format_markdown(string) -> (
             continue();
         );
 
+        selector = false;
+        if (is_tag && replace(_, '<(s(el(ector)?)?:@?[\\w\\d-]+ ?\\/?|\\/s(el(ector)?)?)>') == '',
+            if (split(_):1 != '/',
+                selector = split('[: \/]', tag):1;
+            );
+        );
+
         if (is_tag && replace(_, '<(click:open_url:[^<>]+|\\/click)>') == '', //update to work with any type
             if (split(_):1 != '/',
                 click_cache += {'action' -> 'open_url', 'value' -> slice(_, 16, -2)},
+
                 delete(click_cache:(-1));
             );
             continue();
         );
 
-        if (length(_),
+
+
+        text_object = false;
+        if (selector,
+            text_object = { 'selector' -> selector };
+        );
+
+        if (length(_) && selector == false,
             text_object = {
                 'text' -> replace(replace(replace(replace(_, '\\\\\\*', '*'), '\\\\_', '_'), '\\\\~', '~'),'\\\\<', '<')
             };
+        );
+
+
+
+        if (text_object,
             for (keys(format_settings),
                 if (format_settings:_,
                     text_object:_ = true;
                 );
             );
             
-            if (color_cache, text_object:'color' = color_cache:(-1));
+            if (color_cache,
+                color = split(color_cache:(-1));
+                if (color:0 == '#',
+                    delete(color:0);
+                    full_color = '#';
+                    for (range(length(color)),
+                        full_color += color:_ * (6 / length(color));
+                    ),
+
+                    full_color = join('', color);
+                );
+                text_object:'color' = full_color;
+            );
             if (click_cache, text_object:'clickEvent' = click_cache:(-1));
             formatted_list += text_object;
         );
@@ -280,11 +317,29 @@ format_markdown(string) -> (
     return(encode_json(formatted_list));
 );
 
+cast_to_json(jsonlike) -> (
+    if (type(jsonlike) == 'string', jsonlike = decode_json(jsonlike));
+    if (type(jsonlike) == 'string', jsonlike = [{'text' -> jsonlike}]);
+    if (type(jsonlike) == 'map', jsonlike = [jsonlike]);
+
+    return(jsonlike);
+);
+
+json_to_raw(json) -> (
+    string = '';
+    json = cast_to_json(json);
+
+    for (json,
+        if (type(_) == 'string', string += _; continue());
+        if (type(_) == 'map' && _:'text', string += _:'text'; continue());
+    );
+
+    return(string);
+);
+
 json_to_markdown(json) -> (
     string = '';
-    if (type(json) == 'string', json = decode_json(json));
-    if (type(json) == 'string', json = [{'text' -> json}]);
-    if (type(json) == 'map', json = [json]);
+    json = cast_to_json(json);
 
     for (json,
         if (type(_) == 'string', string += _; continue());
