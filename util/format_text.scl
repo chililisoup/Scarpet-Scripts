@@ -305,7 +305,9 @@ format_markdown(string) -> (
 
                     full_color = join('', color);
                 );
-                text_object:'color' = full_color;
+                if (full_color != 'reset',
+                    text_object:'color' = full_color;
+                );
             );
             if (click_cache, text_object:'clickEvent' = click_cache:(-1));
             formatted_list += text_object;
