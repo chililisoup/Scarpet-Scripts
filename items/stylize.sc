@@ -48,11 +48,8 @@ stylize(hex) -> (
 
 	if (hex, name = replace(name, '(?<!\\\\)(?<![^\\\\]<[^>]+)(?<!^<[^>]+)#', '<c:#' + hex + '>'));
 
-	name = format_text(name);
-	name = decode_json(name);
-	put(name, 0, {'italic' -> false, 'text' -> ''}, 'insert');
-	name = encode_json(name);
-
+	name = format_text('<head:italic=false />' + name);
+	
 	item_nbt = parse_nbt(item:2);
 	item_nbt:'components':'minecraft:custom_name' = name;
 	item_nbt = encode_nbt(item_nbt);

@@ -28,12 +28,8 @@ lore(text) -> (
 
 	item = query(plr, 'holds');
 	if (!item, exit(print(format('w [', 'd Lore', 'w ] ', 'y You aren\'t holding anything!'))));
-
-
-	text = format_text(text);
-	text = decode_json(text);
-	if (!text:0:'italic', text:0:'italic' = false);
-	text = encode_json(text);
+	
+	text = format_text('<head:italic=false />' + text);
 
 	item_nbt = parse_nbt(item:2);
 	if (!item_nbt:'components', item_nbt:'components' = {});

@@ -76,16 +76,19 @@ global_markdown_codes = [
 
 global_markdown_markup = {
     'i' -> 'italic',
-    'italic' -> 'italic',
     'b' -> 'bold',
-    'bold' -> 'bold',
     'st' -> 'strikethrough',
-    'strikethrough' -> 'strikethrough',
     'underline' -> 'underlined',
-    'underlined' -> 'underlined',
-    'obf' -> 'obfuscated',
-    'obfuscated' -> 'obfuscated'
+    'obf' -> 'obfuscated'
 };
+
+global_markup_tags = [
+    'italic',
+    'bold',
+    'strikethrough',
+    'underlined',
+    'obfuscated'
+];
 
 global_markup_colors = [
     'black',
@@ -106,8 +109,12 @@ global_markup_colors = [
     'white',
     'reset'
 ];
+for (global_markup_colors, global_markup_tags += _);
 
-format_text(string) -> (
+
+
+format_text(string, ... options) -> (
+    options = options:0;
     string = split('(?<!\\\\)(?<![^\\\\]<[^>]+)(?<!^<[^>]+)&(?=[0-9a-fk-or])', string);
     new_string = '';
     format_settings = {
@@ -121,7 +128,7 @@ format_text(string) -> (
 
     for (string,
         if (_i && (color = global_bukkit_color_codes:slice(_, 0, 1)),
-            for (keys(format_settings),
+            for (format_settings,
                 if (format_settings:_,
                     new_string += '</' + _ + '>';
                     format_settings:_ = false;
@@ -142,12 +149,15 @@ format_text(string) -> (
         );
     );
     
-    return(format_markdown(new_string));
+    return(format_markdown(new_string, options));
 );
 
-format_bukkit(string) -> (
+
+
+format_bukkit(string, ... options) -> (
+    options = options:0;
     string = split('(?<!\\\\)&(?=[0-9a-fk-or])', string);
-    formatted_list = [''];
+    json = [''];
     format_settings = {
         'color' -> false,
         'obfuscated' -> false,
@@ -159,7 +169,7 @@ format_bukkit(string) -> (
 
     for (string,
         if (_i && (color = global_bukkit_color_codes:slice(_, 0, 1)),
-            for (keys(format_settings), format_settings:_ = false);
+            for (format_settings, format_settings:_ = false);
             format_settings:'color' = color;
         );
 
@@ -169,34 +179,30 @@ format_bukkit(string) -> (
 
         if (length(_) > 1 || _ == '&' || !_i,
             if (_i, _ = slice(_, 1));
-            text_object = {
+            content = {
                 'text' -> replace(_, '\\\\&', '&')
             };
-            for (keys(format_settings),
+            for (format_settings,
                 if (format_settings:_,
-                    text_object:_ = true;
+                    content:_ = true;
                 );
             );
-            formatted_list += text_object;
+            json += content;
         );
     );
 
-    return(encode_json(formatted_list));
+    if (options:'return_raw', return(json));
+    return(encode_json(json));
 );
 
-//Loosely based on Placeholder API
-format_markdown(string) -> (
-    formatted_list = [];
-    color_cache = [];
-    click_cache = [];
-    hover_cache = [];
-    format_settings = {
-        'obfuscated' -> 0,
-        'bold' -> 0,
-        'strikethrough' -> 0,
-        'underlined' -> 0,
-        'italic' -> 0
-    };
+
+
+format_markdown(string, ... options) -> (
+    options = options:0;
+    tree = { 'branches' -> [] };
+    address = [];
+
+    head = {};
 
     for (global_markdown_codes,
         while (string ~ (global_markdown_codes:_i:'regex'), length(string),
@@ -225,72 +231,74 @@ format_markdown(string) -> (
 
     string = replace(string, '(?<!(<split>)|\\\\)<(?!\\/?split>)(?=[^<>]+>)', '<split><');
     string = replace(string, '(?<=[^\\\\]<[^<>]+)(?<!<\\/?split)>(?!<split>)', '><split>');
-    string = split('(<split>)+', string);
+    string = split('((?<!\\\\)<split>)+', string);
     
     for (string,
-        tag = replace(_, '[<\\/>]');
-        is_tag = _ && replace(_, '(?<!\\\\)<\\/?[\\w@:#/.\\-~?&$+!*`(),=]+ ?\\/?>') == '';
-
-        if (is_tag && markup_tag = global_markdown_markup:tag,
-            format_settings:(markup_tag) += number(split(_):1 != '/') * 2 - 1;
-            if (format_settings:(markup_tag) < 0,
-                format_settings:(markup_tag) = 0;
-            );
-            continue();
+        branch = tree;
+        for (address,
+            branch = branch:'branches':_;
         );
 
-        if (is_tag && global_markup_colors ~ tag != null,
+        tag = replace(_, '[<\\/> ]');
+        is_tag = _ && replace(_, '(?<!\\\\)<\\/?[\\w@:#/.\\-~?&$+!*`(),= ]+\\/?>') == '';
+
+        if (is_tag && markup_tag = global_markdown_markup:tag, tag = markup_tag);
+
+        if (is_tag && global_markup_tags ~ tag != null,
             if (split(_):1 != '/',
-                color_cache += tag,
-                for (range(length(color_cache)),
-                    if (color_cache:(-1 - _i) == tag,
-                        delete(color_cache:(-1 - _i));
-                        break();
-                    );
-                );
+                address += length(branch:'branches');
+                branch:'branches' += {'tag' -> tag, 'branches' -> []},
+
+                address = return_address(tree, address, tag);
             );
             continue();
         );
 
         if (is_tag && replace(_, '<(c(olor)?:#?([0-9A-Fa-f]{3}){1,2}|\\/c(olor)?)>') == '',
             if (split(_):1 != '/',
-                color_cache += '#' + split(':#?', tag):1,
-
-                for (range(length(color_cache)),
-                    if (replace(color_cache:(-1 - _i), '#?([0-9A-Fa-f]{3}){1,2}') == '',
-                        delete(color_cache:(-1 - _i));
-                        break();
-                    );
-                    if (replace(color_cache:(-1 - _i), '#?([0-9A-Fa-f]{3}){1,2}') == '',
-                        delete(color_cache:(-1 - _i));
-                        break();
-                    );
+                color = split(split(':#?', tag):1);
+                full_color = '#';
+                for (range(length(color)),
+                    full_color += color:_ * (6 / length(color));
                 );
+
+                address += length(branch:'branches');
+                branch:'branches' += {'tag' -> 'color', 'value' -> full_color, 'branches' -> []},
+
+                address = return_address(tree, address, 'color');
             );
             continue();
         );
 
-        if (is_tag && replace(_, '<(click:open_url:[^<>]+|\\/click)>') == '', //update to work with any type
+        if (is_tag && replace(_, '<(click:\\w+=[^<>]+|\\/click)>') == '',
             if (split(_):1 != '/',
-                click_cache += {'action' -> 'open_url', 'value' -> slice(_, 16, -2)},
+                action = split('[:=]', tag):1;
+                value = split('(<click:\\w+=)|>', _):1;
+                address += length(branch:'branches');
+                branch:'branches' += {'tag' -> 'clickEvent', 'value' -> {'action' -> action, 'value' -> value}, 'branches' -> []},
 
-                delete(click_cache:(-1));
+                address = return_address(tree, address, 'click');
             );
             continue();
         );
 
+        if (is_tag && replace(_, '<head:\\w+=(true|false) ?\\/?>') == '',
+            parts = split('[:=]', tag);
+            head:(parts:1) = parts:2 == 'true';
+            continue();
+        );
 
 
-        text_object = false;
+        content = false;
         if (is_tag && replace(_, '<s(el(ector)?)?:@?[\\w\\d-]+ ?\\/?>') == '',
-            text_object = {
+            content = {
                 'selector' -> split('[: \/]', tag):1
             };
         );
 
         if (is_tag && replace(_, '<item ?\\/?>') == '' && player() && player() ~ 'holds',
             item = player() ~ 'holds';
-            text_object = {
+            content = {
                 'text' -> '[' + item_display_name(item) + ']',
                 'hoverEvent' -> {
                     'action' -> 'show_item',
@@ -300,43 +308,146 @@ format_markdown(string) -> (
         );
 
         if (!is_tag && length(_),
-            text_object = {
-                'text' -> replace(replace(replace(replace(_, '\\\\\\*', '*'), '\\\\_', '_'), '\\\\~', '~'),'\\\\<', '<')
+            content = {
+                'text' -> replace(replace(replace(replace(replace(_, '\\\\\\*', '*'), '\\\\_', '_'), '\\\\~', '~'), '\\\\<', '<'), '\\\\:', ':')
             };
         );
 
+        if (content, branch:'branches' += {'content' -> content});
+    );
 
+    json = compress_json(branch_to_json(tree));
+    if (type(json) != 'list', json = [json]);
 
-        if (text_object,
-            for (keys(format_settings),
-                if (format_settings:_,
-                    text_object:_ = true;
+    if (head,
+        if (head:'text' == null, head:'text' = '');
+        put(json, 0, head, 'insert'),
+
+        if (!json,
+            json = '',
+
+            if (length(json) > 1,
+                if (type(json:0) != 'string', put(json, 0, '', 'insert')),
+
+                json = json:0;
+                if (length(json) == 1 && json:'text',
+                    json = json:'text';
                 );
+            );
+        );
+    );
+    
+    if (options:'return_raw', return(json));
+    return(encode_json(json));
+);
+
+
+
+merge_json(base, extra) -> (
+    json = copy(base);
+    delete(json:'extra');
+
+    if (type(extra) == 'string',
+        json:'text' += extra,
+
+        for (extra,
+            if (_ == 'text',
+                json:_ += extra:_,
+
+                json:_ = extra:_;
             );
             
-            if (color_cache,
-                color = split(color_cache:(-1));
-                if (color:0 == '#',
-                    delete(color:0);
-                    full_color = '#';
-                    for (range(length(color)),
-                        full_color += color:_ * (6 / length(color));
-                    ),
-
-                    full_color = join('', color);
-                );
-                if (full_color != 'reset',
-                    text_object:'color' = full_color;
-                );
-            );
-            if (click_cache, text_object:'clickEvent' = click_cache:(-1));
-            formatted_list += text_object;
         );
     );
 
-    if (!formatted_list, formatted_list = ['']);
+    if (!json:'text' && type(extra) == 'map' && extra:'text' == null,
+        delete(json:'text');
+    );
 
-    return(encode_json(formatted_list));
+    return(json);
+);
+
+compress_json(json) -> (
+    for (json:'extra',
+        json:'extra':_i = compress_json(_);
+    );
+
+    if (length(json:'extra') == 1,
+        json = merge_json(json, json:'extra':0)
+    );
+    
+    if (length(json:'extra'),
+        removed = 0;
+        for (json:'extra',
+            if (type(_) == 'string' || (length(_) == 1 && _:'text'),
+                if (type(_) == 'string',
+                    json:'text' += _,
+
+                    json:'text' += _:'text';
+                );
+                removed += 1,
+
+                break();
+            );
+        );
+        json:'extra' = slice(json:'extra', removed);
+    );
+
+    if (!json:'extra', delete(json:'extra'));
+
+    if (length(json) == 1 && json:'text' != null, json = json:'text');
+
+    if (length(json) == 2 && json:'text' != null && json:'extra' != null,
+        new = [];
+        if (json:'text', new += json:'text');
+        for (json:'extra',
+            new += _;
+        );
+        json = new;
+    );
+
+    return(json);
+);
+
+branch_to_json(branch) -> (
+    json = { 'text' -> '' };
+    if (branch:'content',
+        json = branch:'content'
+    );
+
+    json:'extra' = [];
+    for (branch:'branches',
+        json:'extra' += branch_to_json(_);
+    );
+    if (!json:'extra', delete(json:'extra'));
+
+    if (tag = branch:'tag',
+        if (global_markup_colors ~ tag != null,
+            if (tag != 'reset', json:'color' = tag);
+            return(json);
+        );
+
+        value = branch:'value' && branch:'value' || true;
+        json:tag = value;
+    );
+
+    return(json);
+);
+
+return_address(tree, address, tag) -> (
+    found = [];
+    temp = [];
+    branch = tree;
+
+    for (address,
+        branch = branch:'branches':_;
+        if (branch:'tag' == tag,
+            found = copy(temp);
+        );
+        temp += _;
+    );
+
+    return(found);
 );
 
 cast_to_json(jsonlike) -> (
@@ -359,7 +470,7 @@ json_to_raw(json) -> (
     return(string);
 );
 
-json_to_markdown(json) -> (
+json_to_markup(json) -> (
     string = '';
     json = cast_to_json(json);
 

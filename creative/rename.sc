@@ -25,11 +25,8 @@ rename(text) -> (
     item_nbt = parse_nbt(item:2);
 	if (!item_nbt:'components', item_nbt:'components' = {});
 
-	text = format_text(text);
-    text = decode_json(text);
-    if (!text:0:'italic', text:0:'italic' = false);
-    text = encode_json(text);
-
+	text = format_text('<head:italic=false />' + text);
+	
 	item_nbt:'components':'minecraft:custom_name' = text;
 	item_nbt = encode_nbt(item_nbt);
 	inventory_set(plr, query(plr, 'selected_slot'), item:1, item:0, item_nbt);
