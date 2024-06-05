@@ -464,7 +464,11 @@ json_to_raw(json) -> (
 
     for (json,
         if (type(_) == 'string', string += _; continue());
-        if (type(_) == 'map' && _:'text', string += _:'text'; continue());
+        if (type(_) == 'map' && _:'text',
+            string += _:'text';
+            if (_:'extra', string += json_to_raw(_:'extra'));
+            continue();
+        );
     );
 
     return(string);
