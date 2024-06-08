@@ -8,7 +8,7 @@
 //
 // Requires the format_text library (util/format_text.scl)
 
-import('format_text', 'format_text', 'json_to_markdown');
+import('format_text', 'format_text', 'json_to_markup');
 
 __config() -> {
 	'commands' -> {
@@ -44,7 +44,7 @@ stylize(hex) -> (
 	name = item:2:'components':'minecraft:custom_name';
 	if (!name, exit(print(format('w [', 'd Stylize', 'w ] ', 'y Your item isn\'t renamed!'))));
 
-	name = json_to_markdown(name);
+	name = json_to_markup(name);
 
 	if (hex, name = replace(name, '(?<!\\\\)(?<![^\\\\]<[^>]+)(?<!^<[^>]+)#', '<c:#' + hex + '>'));
 
