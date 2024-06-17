@@ -3,14 +3,6 @@
 
 import('format_text', 'format_text');
 
-get_team_color(plr) -> (
-	team = query(player(plr), 'team');
-	if (team,
-		return(team_property(team, 'color')),
-		return('yellow');
-	);
-);
-
 send_message(from, to, msg) -> (
 	if (!player(to), exit(print(from, format('w [', 'd Message', 'w ] ', 'y That player is not online!'))));
 
@@ -18,11 +10,8 @@ send_message(from, to, msg) -> (
 	write_file('msg_' + from, 'shared_text', to);
 	delete_file('msg_' + to, 'shared_text');
 	write_file('msg_' + to, 'shared_text', from);
-
-	to_color = get_team_color(to);
-	from_color = get_team_color(from);
 	
-	run('tellraw ' + from + ' ' + format_text('[<yellow>You</yellow><gold> -> </gold><' + to_color + '>' + to + '</' + to_color + '>] ' + msg));
-	run('tellraw ' + to + ' ' + format_text('[<' + from_color + '>' + from + '</' + from_color + '><gold> -> </gold><yellow>You</yellow>] ' + msg));
+	run('tellraw ' + from + ' ' + format_text('[<yellow>You</yellow><gold> -> </gold><click:suggest_command=/m ' + to + ' ><selector:@s /></click>] ' + msg));
+	run('tellraw ' + to + ' ' + format_text('[<click:suggest_command=/m ' + from + ' ><selector:@s /></click><gold> -> </gold><yellow>You</yellow>] ' + msg));
 	run('execute as ' + to + ' at ' + to + ' run playsound minecraft:entity.experience_orb.pickup master @s ~ ~ ~');
 );
