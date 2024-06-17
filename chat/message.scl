@@ -1,29 +1,13 @@
 // Library required by m.sc and r.sc, used for sending private messages
+// Requires the format_text library (util/format_text.scl)
 
-global_color_codes = {
-	'black' -> 'k ',
-	'dark_blue' -> 'v ',
-	'dark_green' -> 'e ',
-	'dark_aqua' -> 'q ',
-	'dark_red' -> 'n ',
-	'dark_purple' -> 'p ',
-	'gold' -> 'd ',
-	'gray' -> 'g ',
-	'dark_gray' -> 'f ',
-	'blue' -> 't ',
-	'green' -> 'l ',
-	'aqua' -> 'c ',
-	'red' -> 'r ',
-	'light_purple' -> 'm ',
-	'yellow' -> 'y ',
-	'white' -> 'w '
-};
+import('format_text', 'format_text');
 
 get_team_color(plr) -> (
 	team = query(player(plr), 'team');
 	if (team,
-		return(get(global_color_codes, team_property(team, 'color'))),
-		return('y ');
+		return(team_property(team, 'color')),
+		return('yellow');
 	);
 );
 
@@ -34,8 +18,11 @@ send_message(from, to, msg) -> (
 	write_file('msg_' + from, 'shared_text', to);
 	delete_file('msg_' + to, 'shared_text');
 	write_file('msg_' + to, 'shared_text', from);
+
+	to_color = get_team_color(to);
+	from_color = get_team_color(from);
 	
-	print(from, format('w [', 'y You', 'd  -> ', get_team_color(to) + to, 'w ] ' + msg));
-	print(to, format('w [', get_team_color(from) + from, 'd  -> ', 'y You' , 'w ] ' + msg));
+	run('tellraw ' + from + ' ' + format_text('[<yellow>You</yellow><gold> -> </gold><' + to_color + '>' + to + '</' + to_color + '>] ' + msg));
+	run('tellraw ' + to + ' ' + format_text('[<' + from_color + '>' + from + '</' + from_color + '><gold> -> </gold><yellow>You</yellow>] ' + msg));
 	run('execute as ' + to + ' at ' + to + ' run playsound minecraft:entity.experience_orb.pickup master @s ~ ~ ~');
 );
