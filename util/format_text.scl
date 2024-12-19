@@ -498,3 +498,33 @@ json_to_markup(json) -> (
 
     return(string);
 );
+
+json_to_markdown(json) -> (
+    string = '';
+    json = cast_to_json(json);
+
+    for (json,
+        if (type(_) == 'string', string += _; continue());
+        if (type(_) == 'map' && _:'text',
+            markdown_code = '';
+            if (_:'underlined', markdown_code += '__');
+            if (_:'strikethrough', markdown_code += '~~');
+            if (_:'italic', markdown_code += '*');
+            if (_:'bold', markdown_code += '**');
+
+            markdown_code_split = split(markdown_code);
+            markdown_code_end = '';
+            code_length - length(markdown_code);
+
+            for (markdown_code_split,
+                markdown_code_end += markdown_code_split:(code_length - _i - 1);
+            );
+
+            string += markdown_code + _:'text' + markdown_code_end;
+            if (_:'extra', string += json_to_markdown(_:'extra'));
+            continue();
+        );
+    );
+
+    return(string);
+);
