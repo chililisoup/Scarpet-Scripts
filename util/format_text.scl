@@ -111,6 +111,27 @@ global_markup_colors = [
 ];
 for (global_markup_colors, global_markup_tags += _);
 
+global_nbt_boolean_patch_map = {
+    'minecraft:attribute_modifiers' -> {
+        'show_in_tooltip'
+    },
+    'minecraft:potion_contents' -> {
+        'custom_effects' -> {
+            'ambient',
+            'show_particles',
+            'show_icon'
+        }
+    },
+    'minecraft:container' -> {
+        'item' -> {
+            'components'
+        }
+    },
+    'minecraft:bundle_contents' -> {
+        'components'
+    }
+};
+
 
 
 format_text(string, ... options) -> (
@@ -298,13 +319,29 @@ format_markdown(string, ... options) -> (
 
         if (is_tag && replace(_, '<item ?\\/?>') == '' && player() && player() ~ 'holds',
             item = player() ~ 'holds';
+            item_nbt = parse_nbt(item:2);
+
+            name = item_nbt:'components':'minecraft:custom_name';
+            if (!name, name = item_nbt:'components':'minecraft:item_name');
+            if (!name,
+                name = item_display_name(item),
+
+                name = compress_json(decode_json(name));
+            );
+
+            if (type(name) == 'string', name = {'text' -> item_display_name(item)}); // idk why this is required, breaks without it with.. weird strings
+
             content = {
-                'text' -> '[' + item_display_name(item) + ']',
+                'text' -> '[',
+                'extra' -> [
+                    name,
+                    ']'
+                ],
                 'hoverEvent' -> {
                     'action' -> 'show_item',
-                    'contents' -> parse_nbt(item:2)
+                    'contents' -> fix_nbt(item_nbt);
                 }
-            };
+            }
         );
 
         if (!is_tag && length(_),
@@ -415,7 +452,8 @@ branch_to_json(branch) -> (
         json = branch:'content'
     );
 
-    json:'extra' = [];
+    if (!json:'extra', json:'extra' = []);
+
     for (branch:'branches',
         json:'extra' += branch_to_json(_);
     );
@@ -464,8 +502,8 @@ json_to_raw(json) -> (
 
     for (json,
         if (type(_) == 'string', string += _; continue());
-        if (type(_) == 'map' && _:'text',
-            string += _:'text';
+        if (type(_) == 'map',
+            if (_:'text', string += _:'text');
             if (_:'extra', string += json_to_raw(_:'extra'));
             continue();
         );
@@ -505,14 +543,14 @@ json_to_markdown(json) -> (
 
     for (json,
         if (type(_) == 'string', string += _; continue());
-        if (type(_) == 'map' && _:'text',
+        if (type(_) == 'map',
             markdown_code = '';
             if (_:'underlined', markdown_code += '__');
             if (_:'strikethrough', markdown_code += '~~');
             if (_:'italic', markdown_code += '*');
             if (_:'bold', markdown_code += '**');
 
-            string += markdown_code + _:'text' + reverse_string(markdown_code);
+            string += markdown_code + _:'text' + reverse_string(markdown_code) + '​'; //zero width space for separation. dumb fix but whatever
             if (_:'extra', string += json_to_markdown(_:'extra'));
             continue();
         );
@@ -530,4 +568,41 @@ reverse_string(string) -> (
     );
 
     return(reversed);
+);
+
+fix_nbt(item_nbt) -> (
+    if (!has(item_nbt, 'components'), return(item_nbt));
+
+    item_nbt:'components' = fix_nbt_recursive(item_nbt:'components', global_nbt_boolean_patch_map);
+    return(item_nbt);
+);
+
+fix_nbt_recursive(item_nbt, boolean_patch_map) -> (
+    for (pairs(boolean_patch_map),
+        if (!has(item_nbt, _:0), continue());
+        component = item_nbt:(_:0);
+
+        if (_:0 == 'components',
+            item_nbt:(_:0) = fix_nbt_recursive(component, global_nbt_boolean_patch_map);
+            continue();
+        );
+
+        next_patch = _:1;
+
+        if (type(next_patch) == 'map',
+            if (type(component) == 'list',
+                for (component,
+                    component:_i = fix_nbt_recursive(_, next_patch);
+                );
+                continue();
+            );
+            
+            item_nbt:(_:0) = fix_nbt_recursive(component, next_patch);
+            continue();
+        );
+
+        item_nbt:(_:0) = component == 1;
+    );
+
+    return(item_nbt);
 );
