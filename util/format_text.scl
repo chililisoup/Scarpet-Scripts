@@ -313,7 +313,7 @@ format_markdown(string, ... options) -> (
         content = false;
         if (is_tag && replace(_, '<s(el(ector)?)?:@?[\\w\\d-]+ ?\\/?>') == '',
             content = {
-                'selector' -> split('[: \/]', tag):1
+                'selector' -> split('[: /]', tag):1
             };
         );
 
