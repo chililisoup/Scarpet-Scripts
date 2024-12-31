@@ -43,8 +43,3 @@ __on_player_edits_sign(player, block) -> (
 	
 	return('cancel');
 );
-
-is_in_array(arr, val) -> (
-	for (arr, if (val == _, return(true)));
-	return(false);
-);
