@@ -1,15 +1,15 @@
-// Applies bukkit formatting to signs after clicked
-// Requires the format_text library (util/format_text.scl)
+// Applies text formatting to signs when they're edited
+
+// Requires Carpet LAB Addition (https://modrinth.com/mod/carpet-lab-addition)
+// Check file history for versions not requiring that mod
+
+// Requires the format_text library file (util/format_text.scl)
 
 import('format_text', 'format_text');
 
 __config() -> {};
 
-__on_player_right_clicks_block(player, item_tuple, hand, block, face, hitvec) -> (
-	if (item_tuple, exit());
-	if (!block_tags(block, 'all_signs'), exit());
-	if (!player ~ 'sneaking', exit());
-
+__on_player_edits_sign(player, block) -> (
 	block_pos = pos(block);
 	block_props = [];
 	for (keys(block_state(block)),
