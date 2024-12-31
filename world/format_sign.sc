@@ -7,7 +7,9 @@
 
 import('format_text', 'format_text');
 
-__config() -> {};
+__config() -> {
+    'scope' -> 'global'
+};
 
 __on_player_edits_sign(player, block) -> (
 	block_pos = pos(block);
