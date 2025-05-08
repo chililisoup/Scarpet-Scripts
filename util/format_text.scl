@@ -111,6 +111,13 @@ global_markup_colors = [
 ];
 for (global_markup_colors, global_markup_tags += _);
 
+global_action_values = {
+    'open_url' -> 'url',
+    'run_command' -> 'command',
+    'suggest_command' -> 'command',
+    'change_page' -> 'page'
+};
+
 global_nbt_boolean_patch_map = {
     'minecraft:attribute_modifiers' -> {
         'show_in_tooltip'
@@ -286,7 +293,12 @@ format_markdown(string) -> (
                 action = split('[:=]', tag):1;
                 value = split('(<click:\\w+=)|>', _):1;
                 address += length(branch:'branches');
-                branch:'branches' += {'tag' -> 'clickEvent', 'value' -> {'action' -> action, 'value' -> value}, 'branches' -> []},
+                event = {'tag' -> 'click_event', 'value' -> {'action' -> action}, 'branches' -> []};
+                if (global_action_values ~ action != null,
+                    event:'value':(global_action_values:action) = value,
+                    event:'value':'value' = value;
+                );
+                branch:'branches' += event,
 
                 address = return_address(tree, address, 'click');
             );
