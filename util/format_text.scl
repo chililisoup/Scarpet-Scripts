@@ -132,10 +132,7 @@ global_nbt_boolean_patch_map = {
     }
 };
 
-
-
-format_text(string, ... options) -> (
-    options = options:0;
+format_text(string) -> (
     string = split('(?<!\\\\)(?<![^\\\\]<[^>]+)(?<!^<[^>]+)&(?=[0-9a-fk-or])', string);
     new_string = '';
     format_settings = {
@@ -170,13 +167,10 @@ format_text(string, ... options) -> (
         );
     );
     
-    return(format_markdown(new_string, options));
+    return(format_markdown(new_string));
 );
 
-
-
-format_bukkit(string, ... options) -> (
-    options = options:0;
+format_bukkit(string) -> (
     string = split('(?<!\\\\)&(?=[0-9a-fk-or])', string);
     json = [''];
     format_settings = {
@@ -212,14 +206,10 @@ format_bukkit(string, ... options) -> (
         );
     );
 
-    if (options:'return_raw', return(json));
-    return(encode_json(json));
+    return(json);
 );
 
-
-
-format_markdown(string, ... options) -> (
-    options = options:0;
+format_markdown(string) -> (
     tree = { 'branches' -> [] };
     address = [];
 
@@ -263,7 +253,7 @@ format_markdown(string, ... options) -> (
         tag = replace(_, '[<\\/> ]');
         is_tag = _ && replace(_, '(?<!\\\\)<\\/?[\\w@:#/.\\-~?&$+!*`(),= ]+\\/?>') == '';
 
-        if (is_tag && markup_tag = global_markdown_markup:tag, tag = markup_tag);
+        if (is_tag && (markup_tag = global_markdown_markup:tag), tag = markup_tag);
 
         if (is_tag && global_markup_tags ~ tag != null,
             if (split(_):1 != '/',
@@ -308,7 +298,6 @@ format_markdown(string, ... options) -> (
             head:(parts:1) = parts:2 == 'true';
             continue();
         );
-
 
         content = false;
         if (is_tag && replace(_, '<s(el(ector)?)?:@?[\\w\\d-]+ ?\\/?>') == '',
@@ -373,12 +362,9 @@ format_markdown(string, ... options) -> (
             );
         );
     );
-    
-    if (options:'return_raw', return(json));
-    return(encode_json(json));
+
+    return(json);
 );
-
-
 
 merge_json(base, extra) -> (
     json = copy(base);

@@ -55,16 +55,16 @@ lock_block(key) -> (
 	);
 
 	block_data = block_data(block_pos);
-	if (block_data:'Lock',
-		if (block_data:'Lock' == key,
-			delete(block_data, 'Lock');
+	if (block_data:'lock',
+		if (block_data:'lock':'components':'minecraft:custom_name' == key,
+			delete(block_data, 'lock');
 			set(block_pos, current_block, block_props, block_data);
 			print(format('w [', 'd Lock', 'w ] ', 'y Successfully unlocked ', 'wb ' + current_block, 'y .')),
 			
 			print(format('w [', 'd Lock', 'w ] ', 'y This ', 'wb ' + current_block, 'y  is locked! Input correct password to unlock.'));
 		),
 
-		put(block_data, 'Lock', key);
+		put(block_data, 'lock', encode_nbt({'components' -> {'minecraft:custom_name' -> key}}));
 		set(block_pos, current_block, block_props, block_data);
 		print(format('w [', 'd Lock', 'w ] ', 'y Successfully locked ', 'wb ' + current_block, 'y  with key ', 'wb ' + key, 'y .'));
 	);

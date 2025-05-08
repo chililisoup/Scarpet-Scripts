@@ -24,8 +24,8 @@ __on_player_edits_sign(player, block) -> (
 	back_messages = block_nbt:'back_text':'messages';
 
 	for (range(0, 4),
-		front_text = decode_json(front_messages:_);
-		back_text = decode_json(back_messages:_);
+		front_text = front_messages:_;
+		back_text = back_messages:_;
 
 		if (length(front_text) && length(keys(front_text)) == 0,
 			front_messages:_ = format_text(front_text);
@@ -38,10 +38,8 @@ __on_player_edits_sign(player, block) -> (
 	block_nbt:'front_text':'messages' = front_messages;
 	block_nbt:'back_text':'messages' = back_messages;
 
-	block_nbt = encode_nbt(block_nbt);
+	block_nbt = encode_snbt(block_nbt);
 
 	without_updates(set(block_pos, 'air'));
 	without_updates(set(block_pos, block, block_props, block_nbt));
-	
-	return('cancel');
 );

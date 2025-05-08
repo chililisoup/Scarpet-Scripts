@@ -1,6 +1,9 @@
 // Renames held item using Bukkit formatting
 // Requires the format_text library (util/format_text.scl)
 
+// Requires Carpet LAB Addition (https://modrinth.com/mod/carpet-lab-addition)
+// Check file history for versions not requiring that mod
+
 import('format_text', 'format_text');
 
 __config() -> {
@@ -28,7 +31,7 @@ rename(text) -> (
 	text = format_text('<head:italic=false />' + text);
 	
 	item_nbt:'components':'minecraft:custom_name' = text;
-	item_nbt = encode_nbt(item_nbt);
+	item_nbt = encode_snbt(item_nbt);
 	inventory_set(plr, query(plr, 'selected_slot'), item:1, item:0, item_nbt);
 );
 
@@ -44,6 +47,6 @@ clear_name() -> (
 
     if (!item_nbt || item_nbt == {} || item_nbt == 'null',
         inventory_set(plr, query(plr, 'selected_slot'), item:1, item:0),
-        inventory_set(plr, query(plr, 'selected_slot'), item:1, item:0, encode_nbt(item_nbt));
+        inventory_set(plr, query(plr, 'selected_slot'), item:1, item:0, encode_snbt(item_nbt));
     );
 );

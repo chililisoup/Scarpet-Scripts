@@ -16,7 +16,7 @@ __config() -> {
 };
 
 print_message(message) -> (
-    message = format_text(message);
+    message = encode_json(format_text(message));
     print(format('w ' + message, '^w Click to copy', '&' + message));
     run('tellraw @s ' + message);
 );

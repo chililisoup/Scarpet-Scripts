@@ -11,7 +11,7 @@ send_message(from, to, msg) -> (
 	delete_file('msg_' + to, 'shared_text');
 	write_file('msg_' + to, 'shared_text', from);
 	
-	run('tellraw ' + from + ' ' + format_text('[<yellow>You</yellow><gold> -> </gold><click:suggest_command=/m ' + to + ' ><selector:' + to + ' /></click>] ' + msg));
-	run('tellraw ' + to + ' ' + format_text('[<click:suggest_command=/m ' + from + ' ><selector:' + from + ' /></click><gold> -> </gold><yellow>You</yellow>] ' + msg));
+	run('tellraw ' + from + ' ' + encode_json(format_text('[<yellow>You</yellow><gold> -> </gold><click:suggest_command=/m ' + to + ' ><selector:' + to + ' /></click>] ' + msg)));
+	run('tellraw ' + to + ' ' + encode_json(format_text('[<click:suggest_command=/m ' + from + ' ><selector:' + from + ' /></click><gold> -> </gold><yellow>You</yellow>] ' + msg)));
 	run('execute as ' + to + ' at ' + to + ' run playsound minecraft:entity.experience_orb.pickup master @s ~ ~ ~');
 );
