@@ -320,16 +320,16 @@ format_markdown(string) -> (
 
             if (type(name) == 'string', name = {'text' -> item_display_name(item)}); // idk why this is required, breaks without it with.. weird strings
 
+            item_nbt = fix_nbt(item_nbt);
+            item_nbt:'action' = 'show_item';
+
             content = {
                 'text' -> '[',
                 'extra' -> [
                     name,
                     ']'
                 ],
-                'hoverEvent' -> {
-                    'action' -> 'show_item',
-                    'contents' -> fix_nbt(item_nbt);
-                }
+                'hover_event' -> item_nbt
             }
         );
 
