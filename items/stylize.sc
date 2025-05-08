@@ -8,6 +8,9 @@
 //
 // Requires the format_text library (util/format_text.scl)
 
+// Requires Carpet LAB Addition (https://modrinth.com/mod/carpet-lab-addition)
+// Check file history for versions not requiring that mod
+
 import('format_text', 'format_text', 'json_to_markup');
 
 __config() -> {
@@ -44,7 +47,7 @@ stylize(hex) -> (
 	name = item:2:'components':'minecraft:custom_name';
 	if (!name, exit(print(format('w [', 'd Stylize', 'w ] ', 'y Your item isn\'t renamed!'))));
 
-	name = json_to_markup(name);
+	name = json_to_markup(encode_json(name));
 
 	if (hex, name = replace(name, '(?<!\\\\)(?<![^\\\\]<[^>]+)(?<!^<[^>]+)#', '<c:#' + hex + '>'));
 
@@ -52,6 +55,6 @@ stylize(hex) -> (
 	
 	item_nbt = parse_nbt(item:2);
 	item_nbt:'components':'minecraft:custom_name' = name;
-	item_nbt = encode_nbt(item_nbt);
+	item_nbt = encode_snbt(item_nbt);
 	inventory_set(plr, plr ~ 'selected_slot', item:1, item:0, item_nbt);
 );

@@ -1,6 +1,9 @@
 // Takes an item's custom name and moves it to the next lore line
 // Survival mode version, for creative version see creative/lore.sc
 
+// Requires Carpet LAB Addition (https://modrinth.com/mod/carpet-lab-addition)
+// Check file history for versions not requiring that mod
+
 __config() -> {
 	'commands' -> {
 	  '' -> 'lore',
@@ -36,7 +39,7 @@ lore() -> (
 
 	delete(item_nbt:'components':'minecraft:custom_name');
 	item_nbt:'components':'minecraft:lore' = lore;
-	item_nbt = encode_nbt(item_nbt);
+	item_nbt = encode_snbt(item_nbt);
 	inventory_set(plr, plr ~ 'selected_slot', item:1, item:0, item_nbt);
 );
 
@@ -61,6 +64,6 @@ clear(lines) -> (
 	);
 	
 	if (!item_nbt:'components':'minecraft:lore', delete(item_nbt:'components':'minecraft:lore'));
-	item_nbt = encode_nbt(item_nbt);
+	item_nbt = encode_snbt(item_nbt);
 	inventory_set(plr, plr ~ 'selected_slot', item:1, item:0, item_nbt);
 );

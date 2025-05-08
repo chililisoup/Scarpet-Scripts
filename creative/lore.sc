@@ -2,6 +2,9 @@
 // Creative mode version, for survival version see items/lore.sc
 // Requires the format_text library (util/format_text.scl)
 
+// Requires Carpet LAB Addition (https://modrinth.com/mod/carpet-lab-addition)
+// Check file history for versions not requiring that mod
+
 import('format_text', 'format_text');
 
 __config() -> {
@@ -41,7 +44,7 @@ lore(text) -> (
 	);
 
 	item_nbt:'components':'minecraft:lore' = lore;
-	item_nbt = encode_nbt(item_nbt);
+	item_nbt = encode_snbt(item_nbt);
 	inventory_set(plr, plr ~ 'selected_slot', item:1, item:0, item_nbt);
 );
 
@@ -66,6 +69,6 @@ clear(lines) -> (
 	);
 	
 	if (!item_nbt:'components':'minecraft:lore', delete(item_nbt:'components':'minecraft:lore'));
-	item_nbt = encode_nbt(item_nbt);
+	item_nbt = encode_snbt(item_nbt);
 	inventory_set(plr, plr ~ 'selected_slot', item:1, item:0, item_nbt);
 );
