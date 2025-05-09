@@ -113,8 +113,7 @@ open_warp_rename_menu(warp) -> (
     if (warp:'components',
         item_nbt:'components' = copy(warp:'components');
     );
-    item_nbt:'components':'minecraft:item_name' = {'text' -> warp:'name', 'color' -> 'white'};
-    delete(item_nbt:'components':'minecraft:custom_name');
+    item_nbt:'components':'minecraft:custom_name' = {'text' -> warp:'name', 'color' -> 'white', 'italic' -> false};
 
     open_anvil_screen(item_nbt, 'Rename Warp...', _(screen, outer(warp)) -> (
         item = inventory_get(screen, 2);
@@ -282,12 +281,13 @@ open_warp_edit_menu(warp) -> (
             components = parse_nbt(item:2):'components';
             if (components,
                 warp:'components' = copy(components);
-                delete(warp:'components':'minecraft:item_name');
                 item_nbt:'components' = components,
 
                 delete(warp:'components');
             );
-            item_nbt:'components':'minecraft:item_name' = {'text' -> warp:'name', 'color' -> 'white'};
+            if (!item_nbt:'components':'minecraft:custom_name',
+                item_nbt:'components':'minecraft:custom_name' = {'text' -> warp:'name', 'color' -> 'white', 'italic' -> false};
+            );
 
             inventory_set(screen, 4, null, null, encode_snbt(item_nbt));
             edit_warp(warp, warp);
@@ -307,7 +307,9 @@ open_warp_edit_menu(warp) -> (
     if (warp:'components',
         item_nbt:'components' = copy(warp:'components');
     );
-    item_nbt:'components':'minecraft:item_name' = {'text' -> warp:'name', 'color' -> 'white'};
+    if (!item_nbt:'components':'minecraft:custom_name',
+        item_nbt:'components':'minecraft:custom_name' = {'text' -> warp:'name', 'color' -> 'white', 'italic' -> false};
+    );
     inventory_set(screen, 4, null, null, encode_snbt(item_nbt));
     
     inventory_set(screen, 9, null, null, encode_snbt({'count' -> 1, 'id' -> 'iron_ingot', 'components' -> {'minecraft:item_name' -> 'Push up in list'}}));
@@ -403,7 +405,9 @@ open_warp_menu(page, edit_mode) -> (
         if (_:'components',
             item_nbt:'components' = copy(_:'components');
         );
-        item_nbt:'components':'minecraft:item_name' = {'text' -> _:'name', 'color' -> 'white'};
+        if (!item_nbt:'components':'minecraft:custom_name',
+            item_nbt:'components':'minecraft:custom_name' = {'text' -> _:'name', 'color' -> 'white', 'italic' -> false};
+        );
 
         inventory_set(screen, _i, null, null, encode_snbt(item_nbt));
     );
