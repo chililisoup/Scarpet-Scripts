@@ -257,7 +257,7 @@ format_markdown(string) -> (
             branch = branch:'branches':_;
         );
 
-        tag = replace(_, '[<\\/> ]');
+        tag = replace(_, '(^<)|( ?\\/?>$)');
         is_tag = _ && replace(_, '(?<!\\\\)<\\/?[\\w@:#/.\\-~?&$+!*`(),= ]+\\/?>') == '';
 
         if (is_tag && (markup_tag = global_markdown_markup:tag), tag = markup_tag);
@@ -306,13 +306,13 @@ format_markdown(string) -> (
         );
 
         if (is_tag && replace(_, '<head:\\w+=(true|false) ?\\/?>') == '',
-            parts = split('[:=]', tag);
-            head:(parts:1) = parts:2 == 'true';
+            args = split('[:=]', tag);
+            head:(args:1) = args:2 == 'true';
             continue();
         );
 
         content = false;
-        if (is_tag && replace(_, '<s(el(ector)?)?:@?[\\w\\d-]+ ?\\/?>') == '',
+        if (is_tag && replace(_, '<s(el(ector)?)?:@?[\\w-]+ ?\\/?>') == '',
             content = {
                 'selector' -> split('[: /]', tag):1
             };
@@ -343,6 +343,26 @@ format_markdown(string) -> (
                 ],
                 'hover_event' -> item_nbt
             }
+        );
+
+        if (is_tag && replace(_, '<player:[\\w]+( hat=(true|false))? ?\\/?>') == '',
+            args = split('[: ]', tag);
+
+            content = {
+                'player' -> { 'name' -> args:1 }
+            };
+
+            if (length(args) > 2, content:'hat' = split('=', args:2):1 == 'true');
+        );
+
+        if (is_tag && replace(_, '<atlas:([a-z\\d-_.]+:)?[a-z\\d-_./]+( ([a-z\\d-_.]+:)?[a-z\\d-_./]+)? ?\\/?>') == '',
+            args = split('atlas:| ', tag);
+
+            content = {
+                'sprite' -> args:1
+            };
+
+            if (length(args) > 2, content:'atlas' = args:2);
         );
 
         if (!is_tag && length(_),
