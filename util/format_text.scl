@@ -345,7 +345,7 @@ format_markdown(string) -> (
             }
         );
 
-        if (is_tag && replace(_, '<player:[\\w]+( hat=(true|false))? ?\\/?>') == '',
+        if (is_tag && replace(_, '<p(layer)?:[\\w]+( hat=(true|false))? ?\\/?>') == '',
             args = split('[: ]', tag);
 
             content = {
