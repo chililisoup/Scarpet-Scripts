@@ -568,7 +568,9 @@ json_to_markdown(json) -> (
             if (_:'italic', markdown_code += '*');
             if (_:'bold', markdown_code += '**');
 
-            string += markdown_code + _:'text' + reverse_string(markdown_code) + '​'; //zero width space for separation. dumb fix but whatever
+            //zero width space for separation. dumb fix but whatever
+            if (_:'text', string += markdown_code + _:'text' + reverse_string(markdown_code) + '​');
+            
             if (_:'extra', string += json_to_markdown(_:'extra'));
             continue();
         );
