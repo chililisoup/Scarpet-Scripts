@@ -257,7 +257,7 @@ format_markdown(string) -> (
             branch = branch:'branches':_;
         );
 
-        tag = replace(_, '(^<)|( ?\\/?>$)');
+        tag = replace(_, '(^<\\/?)|( ?\\/?>$)');
         is_tag = _ && replace(_, '(?<!\\\\)<\\/?[\\w@:#/.\\-~?&$+!*`(),= ]+\\/?>') == '';
 
         if (is_tag && (markup_tag = global_markdown_markup:tag), tag = markup_tag);
