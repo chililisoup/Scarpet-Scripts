@@ -397,7 +397,7 @@ open_warp_menu(page, edit_mode) -> (
     for (json,
         if (_i >= 45, break());
         item_nbt = {
-            'count' -> '1',
+            'count' -> 1,
             'id' -> _:'item' || 'oak_sign',
             'components' -> {}
         };

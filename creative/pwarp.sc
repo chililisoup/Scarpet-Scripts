@@ -79,7 +79,7 @@ open_anvil_screen(item_nbt, name, callback) -> (
         if (!screen_property(screen, 'open'), return('cancel'));
         screen_property(screen, 'level_cost', 1);
         screen_property(screen, 'level_cost', 0);
-        
+
         if (action == 'pickup' && data:'slot' == 2, call(callback, screen));
 
         return('cancel');
@@ -181,7 +181,7 @@ open_warp_edit_menu(warp) -> (
             move_warp(warp, index, max(index - 1, 0));
             return('cancel');
         );
-        
+
         if (data:'slot' == 10,
             json = read_file('warp_list_' + player() ~ 'uuid', 'json');
             index = find_warp_index(warp);
@@ -201,8 +201,8 @@ open_warp_edit_menu(warp) -> (
             print(
                 format(
                     'w [', 'd PWarp', 'w ] ', 'y Successfully moved warp ', 'wb ' + warp:'name', 'y  to ', 'wb ' +
-                    pos:0 + ', ' + 
-                    pos:1 + ', ' + 
+                    pos:0 + ', ' +
+                    pos:1 + ', ' +
                     pos:2,
                     'y  in ', 'wb ' + warp:'dim'
                 )
@@ -312,7 +312,7 @@ open_warp_edit_menu(warp) -> (
         item_nbt:'components':'minecraft:custom_name' = {'text' -> warp:'name', 'color' -> 'white', 'italic' -> false};
     );
     inventory_set(screen, 4, null, null, encode_snbt(item_nbt));
-    
+
     inventory_set(screen, 9, null, null, encode_snbt({'count' -> 1, 'id' -> 'iron_ingot', 'components' -> {'minecraft:item_name' -> 'Push up in list'}}));
     inventory_set(screen, 10, null, null, encode_snbt({'count' -> 1, 'id' -> 'iron_nugget', 'components' -> {'minecraft:item_name' -> 'Push down in list'}}));
 
@@ -398,7 +398,7 @@ open_warp_menu(page, edit_mode) -> (
     for (json,
         if (_i >= 45, break());
         item_nbt = {
-            'count' -> '1',
+            'count' -> 1,
             'id' -> _:'item' || 'oak_sign',
             'components' -> {}
         };
@@ -446,8 +446,8 @@ create_warp(name) -> (
     print(
         format(
             'w [', 'd PWarp', 'w ] ', 'y Successfully created warp ', 'wb ' + name, 'y  at ', 'wb ' +
-            pos:0 + ', ' + 
-            pos:1 + ', ' + 
+            pos:0 + ', ' +
+            pos:1 + ', ' +
             pos:2,
             'y  in ', 'wb ' + dim
         )
@@ -474,8 +474,8 @@ delete_warp(name) -> (
         found = true;
         break;
     ));
-    
+
     if (!found, exit(print(format('w [', 'd PWarp', 'w ] ', 'y No such warp ', 'wb ' + name))));
-    
+
     write_file('warp_list_' + player() ~ 'uuid', 'json', json);
 );
